@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.1.0](https://github.com/kitti12911/image-toolchain/compare/v1.0.1...v1.1.0) (2026-05-06)
+
+
+### Features
+
+* add multi-arch support ([#5](https://github.com/kitti12911/image-toolchain/issues/5)) ([4aeae9e](https://github.com/kitti12911/image-toolchain/commit/4aeae9ec13d1eb9f04f1f48d601388b8dfb9fb52))
+
 ## [1.0.1](https://github.com/kitti12911/image-toolchain/compare/v1.0.0...v1.0.1) (2026-05-06)
 
 
