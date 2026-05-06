@@ -11,8 +11,13 @@ RUN apk add --no-cache \
 	python3
 
 RUN python3 -m venv /opt/semgrep \
-	&& /opt/semgrep/bin/python -m pip install --no-cache-dir --upgrade pip \
-	&& /opt/semgrep/bin/python -m pip install --no-cache-dir semgrep==1.161.0
+	&& /opt/semgrep/bin/python -m pip install --no-cache-dir --upgrade pip
+
+RUN apk add --no-cache --virtual .strip-deps binutils \
+	&& /opt/semgrep/bin/python -m pip install --no-cache-dir semgrep==1.161.0 \
+	&& strip --strip-unneeded /opt/semgrep/lib/python*/site-packages/semgrep/bin/semgrep-core \
+	&& find /opt/semgrep -type d -name __pycache__ -prune -exec rm -rf {} + \
+	&& apk del .strip-deps
 
 RUN --mount=type=cache,target=/go/pkg/mod \
 	--mount=type=cache,target=/root/.cache/go-build \
