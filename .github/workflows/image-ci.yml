@@ -4,6 +4,7 @@ on:
     pull_request:
         paths:
             - ".github/workflows/image-ci.yml"
+            - ".github/workflows/release.yml"
             - "images/**"
             - "scripts/**"
             - "Makefile"
@@ -17,14 +18,28 @@ permissions:
 
 jobs:
     validate:
-        name: Build And Scan ${{ matrix.image }}
-        runs-on: ubuntu-latest
+        name: Build And Scan ${{ matrix.image }} (${{ matrix.arch }})
+        runs-on: ${{ matrix.runner }}
         strategy:
             fail-fast: false
             matrix:
-                image:
-                    - image-toolchain
-                    - security-toolchain
+                include:
+                    - image: image-toolchain
+                      arch: amd64
+                      platform: linux/amd64
+                      runner: ubuntu-latest
+                    - image: image-toolchain
+                      arch: arm64
+                      platform: linux/arm64
+                      runner: ubuntu-24.04-arm
+                    - image: security-toolchain
+                      arch: amd64
+                      platform: linux/amd64
+                      runner: ubuntu-latest
+                    - image: security-toolchain
+                      arch: arm64
+                      platform: linux/arm64
+                      runner: ubuntu-24.04-arm
         steps:
             # actions/checkout v6.0.2
             - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
@@ -38,16 +53,17 @@ jobs:
               with:
                   context: images/${{ matrix.image }}
                   load: true
-                  tags: ${{ matrix.image }}:scan
-                  cache-from: type=gha,scope=${{ matrix.image }}
-                  cache-to: type=gha,mode=max,scope=${{ matrix.image }}
+                  platforms: ${{ matrix.platform }}
+                  tags: ${{ matrix.image }}:scan-${{ matrix.arch }}
+                  cache-from: type=gha,scope=${{ matrix.image }}-${{ matrix.arch }}
+                  cache-to: type=gha,mode=max,scope=${{ matrix.image }}-${{ matrix.arch }}
                   provenance: false
                   sbom: false
 
             # aquasecurity/trivy-action v0.36.0
             - uses: aquasecurity/trivy-action@a9c7b0f06e461e9d4b4d1711f154ee024b8d7ab8
               with:
-                  image-ref: ${{ matrix.image }}:scan
+                  image-ref: ${{ matrix.image }}:scan-${{ matrix.arch }}
                   format: table
                   exit-code: 1
                   severity: CRITICAL,HIGH

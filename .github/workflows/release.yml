@@ -24,17 +24,31 @@ jobs:
                   release-type: simple
 
     validate:
-        name: Build And Scan ${{ matrix.image }}
-        runs-on: ubuntu-latest
+        name: Build And Scan ${{ matrix.image }} (${{ matrix.arch }})
+        runs-on: ${{ matrix.runner }}
         needs:
             - release
         if: needs.release.outputs.release_created == 'true'
         strategy:
             fail-fast: false
             matrix:
-                image:
-                    - image-toolchain
-                    - security-toolchain
+                include:
+                    - image: image-toolchain
+                      arch: amd64
+                      platform: linux/amd64
+                      runner: ubuntu-latest
+                    - image: image-toolchain
+                      arch: arm64
+                      platform: linux/arm64
+                      runner: ubuntu-24.04-arm
+                    - image: security-toolchain
+                      arch: amd64
+                      platform: linux/amd64
+                      runner: ubuntu-latest
+                    - image: security-toolchain
+                      arch: arm64
+                      platform: linux/arm64
+                      runner: ubuntu-24.04-arm
         steps:
             # actions/checkout v6.0.2
             - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
@@ -50,38 +64,52 @@ jobs:
               with:
                   context: images/${{ matrix.image }}
                   load: true
-                  tags: ${{ matrix.image }}:scan
-                  cache-from: type=gha,scope=${{ matrix.image }}
-                  cache-to: type=gha,mode=max,scope=${{ matrix.image }}
+                  platforms: ${{ matrix.platform }}
+                  tags: ${{ matrix.image }}:scan-${{ matrix.arch }}
+                  cache-from: type=gha,scope=${{ matrix.image }}-${{ matrix.arch }}
+                  cache-to: type=gha,mode=max,scope=${{ matrix.image }}-${{ matrix.arch }}
                   provenance: false
                   sbom: false
 
             # aquasecurity/trivy-action v0.36.0
             - uses: aquasecurity/trivy-action@a9c7b0f06e461e9d4b4d1711f154ee024b8d7ab8
               with:
-                  image-ref: ${{ matrix.image }}:scan
+                  image-ref: ${{ matrix.image }}:scan-${{ matrix.arch }}
                   format: table
                   exit-code: 1
                   severity: CRITICAL,HIGH
                   ignore-unfixed: true
 
-    publish:
-        name: Publish ${{ matrix.image }}
-        runs-on: ubuntu-latest
+    build:
+        name: Build And Push ${{ matrix.image }} (${{ matrix.arch }})
+        runs-on: ${{ matrix.runner }}
         needs:
             - release
             - validate
         if: needs.release.outputs.release_created == 'true'
         env:
             REGISTRY: zot.kittiaccess.work
-            IMAGE_REF: zot.kittiaccess.work/${{ github.repository_owner }}/${{ matrix.image }}
-            RELEASE_TAG: ${{ needs.release.outputs.tag_name }}
+            ARCH_IMAGE_REF: zot.kittiaccess.work/${{ github.repository_owner }}/${{ matrix.image }}:${{ needs.release.outputs.tag_name }}-${{ matrix.arch }}
         strategy:
             fail-fast: false
             matrix:
-                image:
-                    - image-toolchain
-                    - security-toolchain
+                include:
+                    - image: image-toolchain
+                      arch: amd64
+                      platform: linux/amd64
+                      runner: ubuntu-latest
+                    - image: image-toolchain
+                      arch: arm64
+                      platform: linux/arm64
+                      runner: ubuntu-24.04-arm
+                    - image: security-toolchain
+                      arch: amd64
+                      platform: linux/amd64
+                      runner: ubuntu-latest
+                    - image: security-toolchain
+                      arch: arm64
+                      platform: linux/arm64
+                      runner: ubuntu-24.04-arm
         steps:
             # actions/checkout v6.0.2
             - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
@@ -104,20 +132,59 @@ jobs:
               uses: docker/build-push-action@263435318d21b8e681c14492fe198d362a7d2c83
               with:
                   context: images/${{ matrix.image }}
-                  push: true
-                  tags: |
-                      ${{ env.IMAGE_REF }}:${{ env.RELEASE_TAG }}
-                      ${{ env.IMAGE_REF }}:latest
-                  cache-from: type=gha,scope=${{ matrix.image }}
+                  platforms: ${{ matrix.platform }}
+                  tags: ${{ env.ARCH_IMAGE_REF }}
+                  cache-from: type=gha,scope=${{ matrix.image }}-${{ matrix.arch }}
                   outputs: type=image,push=true,oci-mediatypes=true
                   provenance: true
                   sbom: true
+
+    publish:
+        name: Publish ${{ matrix.image }} Manifest
+        runs-on: ubuntu-latest
+        needs:
+            - release
+            - build
+        if: needs.release.outputs.release_created == 'true'
+        env:
+            REGISTRY: zot.kittiaccess.work
+            IMAGE_REF: zot.kittiaccess.work/${{ github.repository_owner }}/${{ matrix.image }}
+            RELEASE_TAG: ${{ needs.release.outputs.tag_name }}
+        strategy:
+            fail-fast: false
+            matrix:
+                image:
+                    - image-toolchain
+                    - security-toolchain
+        steps:
+            # docker/setup-buildx-action v3.11.1
+            - uses: docker/setup-buildx-action@e468171a9de216ec08956ac3ada2f0791b6bd435
+
+            # docker/login-action v4.1.0
+            - name: Login to Zot registry
+              uses: docker/login-action@4907a6ddec9925e35a0a9e82d7399ccc52663121
+              with:
+                  registry: ${{ env.REGISTRY }}
+                  username: ${{ secrets.ZOT_USERNAME }}
+                  password: ${{ secrets.ZOT_TOKEN }}
+
+            - name: Create multi-arch manifest
+              run: |
+                  docker buildx imagetools create \
+                      --tag "${IMAGE_REF}:${RELEASE_TAG}" \
+                      --tag "${IMAGE_REF}:latest" \
+                      "${IMAGE_REF}:${RELEASE_TAG}-amd64" \
+                      "${IMAGE_REF}:${RELEASE_TAG}-arm64"
 
             - name: Resolve image digest
               id: image
               run: |
                   digest="$(docker buildx imagetools inspect "${IMAGE_REF}:${RELEASE_TAG}" --format '{{.Manifest.Digest}}')"
+                  amd64_digest="$(docker buildx imagetools inspect "${IMAGE_REF}:${RELEASE_TAG}-amd64" --format '{{.Manifest.Digest}}')"
+                  arm64_digest="$(docker buildx imagetools inspect "${IMAGE_REF}:${RELEASE_TAG}-arm64" --format '{{.Manifest.Digest}}')"
                   echo "digest=${digest}" >> "${GITHUB_OUTPUT}"
+                  echo "amd64_digest=${amd64_digest}" >> "${GITHUB_OUTPUT}"
+                  echo "arm64_digest=${arm64_digest}" >> "${GITHUB_OUTPUT}"
 
             # sigstore/cosign-installer v4.1.1
             - uses: sigstore/cosign-installer@cad07c2e89fa2edd6e2d7bab4c1aa38e53f76003
@@ -136,3 +203,15 @@ jobs:
                       --use-signing-config=false \
                       --key "${key_file}" \
                       "${IMAGE_REF}@${{ steps.image.outputs.digest }}"
+
+                  cosign sign --yes \
+                      --new-bundle-format=false \
+                      --use-signing-config=false \
+                      --key "${key_file}" \
+                      "${IMAGE_REF}@${{ steps.image.outputs.amd64_digest }}"
+
+                  cosign sign --yes \
+                      --new-bundle-format=false \
+                      --use-signing-config=false \
+                      --key "${key_file}" \
+                      "${IMAGE_REF}@${{ steps.image.outputs.arm64_digest }}"
