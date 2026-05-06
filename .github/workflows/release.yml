@@ -11,9 +11,128 @@ permissions:
 
 jobs:
     release:
+        name: Release Please
         runs-on: ubuntu-latest
+        outputs:
+            release_created: ${{ steps.release.outputs.release_created }}
+            tag_name: ${{ steps.release.outputs.tag_name }}
         steps:
             # googleapis/release-please-action v5.0.0
-            - uses: googleapis/release-please-action@45996ed1f6d02564a971a2fa1b5860e934307cf7
+            - id: release
+              uses: googleapis/release-please-action@45996ed1f6d02564a971a2fa1b5860e934307cf7
               with:
                   release-type: simple
+
+    validate:
+        name: Build And Scan ${{ matrix.image }}
+        runs-on: ubuntu-latest
+        needs:
+            - release
+        if: needs.release.outputs.release_created == 'true'
+        strategy:
+            fail-fast: false
+            matrix:
+                image:
+                    - image-toolchain
+                    - security-toolchain
+        steps:
+            # actions/checkout v6.0.2
+            - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+              with:
+                  ref: ${{ needs.release.outputs.tag_name }}
+
+            # docker/setup-buildx-action v3.11.1
+            - uses: docker/setup-buildx-action@e468171a9de216ec08956ac3ada2f0791b6bd435
+
+            # docker/build-push-action v6.18.0
+            - name: Build image for scan
+              uses: docker/build-push-action@263435318d21b8e681c14492fe198d362a7d2c83
+              with:
+                  context: images/${{ matrix.image }}
+                  load: true
+                  tags: ${{ matrix.image }}:scan
+                  cache-from: type=gha,scope=${{ matrix.image }}
+                  cache-to: type=gha,mode=max,scope=${{ matrix.image }}
+                  provenance: false
+                  sbom: false
+
+            # aquasecurity/trivy-action v0.36.0
+            - uses: aquasecurity/trivy-action@a9c7b0f06e461e9d4b4d1711f154ee024b8d7ab8
+              with:
+                  image-ref: ${{ matrix.image }}:scan
+                  format: table
+                  exit-code: 1
+                  severity: CRITICAL,HIGH
+                  ignore-unfixed: true
+
+    publish:
+        name: Publish ${{ matrix.image }}
+        runs-on: ubuntu-latest
+        needs:
+            - release
+            - validate
+        if: needs.release.outputs.release_created == 'true'
+        env:
+            REGISTRY: zot.kittiaccess.work
+            IMAGE_REF: zot.kittiaccess.work/${{ github.repository_owner }}/${{ matrix.image }}
+            RELEASE_TAG: ${{ needs.release.outputs.tag_name }}
+        strategy:
+            fail-fast: false
+            matrix:
+                image:
+                    - image-toolchain
+                    - security-toolchain
+        steps:
+            # actions/checkout v6.0.2
+            - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+              with:
+                  ref: ${{ needs.release.outputs.tag_name }}
+
+            # docker/setup-buildx-action v3.11.1
+            - uses: docker/setup-buildx-action@e468171a9de216ec08956ac3ada2f0791b6bd435
+
+            # docker/login-action v4.1.0
+            - name: Login to Zot registry
+              uses: docker/login-action@4907a6ddec9925e35a0a9e82d7399ccc52663121
+              with:
+                  registry: ${{ env.REGISTRY }}
+                  username: ${{ secrets.ZOT_USERNAME }}
+                  password: ${{ secrets.ZOT_TOKEN }}
+
+            # docker/build-push-action v6.18.0
+            - name: Build and push image
+              uses: docker/build-push-action@263435318d21b8e681c14492fe198d362a7d2c83
+              with:
+                  context: images/${{ matrix.image }}
+                  push: true
+                  tags: |
+                      ${{ env.IMAGE_REF }}:${{ env.RELEASE_TAG }}
+                      ${{ env.IMAGE_REF }}:latest
+                  cache-from: type=gha,scope=${{ matrix.image }}
+                  outputs: type=image,push=true,oci-mediatypes=true
+                  provenance: true
+                  sbom: true
+
+            - name: Resolve image digest
+              id: image
+              run: |
+                  digest="$(docker buildx imagetools inspect "${IMAGE_REF}:${RELEASE_TAG}" --format '{{.Manifest.Digest}}')"
+                  echo "digest=${digest}" >> "${GITHUB_OUTPUT}"
+
+            # sigstore/cosign-installer v4.1.1
+            - uses: sigstore/cosign-installer@cad07c2e89fa2edd6e2d7bab4c1aa38e53f76003
+
+            - name: Sign image digest
+              env:
+                  COSIGN_PRIVATE_KEY: ${{ secrets.COSIGN_PRIVATE_KEY }}
+              run: |
+                  key_file="$(mktemp)"
+                  trap 'rm -f "${key_file}"' EXIT
+                  printf '%s' "${COSIGN_PRIVATE_KEY}" > "${key_file}"
+                  chmod 600 "${key_file}"
+
+                  cosign sign --yes \
+                      --new-bundle-format=false \
+                      --use-signing-config=false \
+                      --key "${key_file}" \
+                      "${IMAGE_REF}@${{ steps.image.outputs.digest }}"

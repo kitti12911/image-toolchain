@@ -1,9 +1,6 @@
 name: Image CI
 
 on:
-    release:
-        types:
-            - published
     pull_request:
         paths:
             - ".github/workflows/image-ci.yml"
@@ -19,13 +16,9 @@ permissions:
     contents: read
 
 jobs:
-    build:
+    validate:
         name: Build And Scan ${{ matrix.image }}
         runs-on: ubuntu-latest
-        env:
-            REGISTRY: zot.kittiaccess.work
-            IMAGE_REF: zot.kittiaccess.work/${{ github.repository_owner }}/${{ matrix.image }}
-            RELEASE_TAG: ${{ github.event.release.tag_name }}
         strategy:
             fail-fast: false
             matrix:
@@ -35,8 +28,6 @@ jobs:
         steps:
             # actions/checkout v6.0.2
             - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
-              with:
-                  ref: ${{ github.event_name == 'release' && github.event.release.tag_name || github.ref }}
 
             # docker/setup-buildx-action v3.11.1
             - uses: docker/setup-buildx-action@e468171a9de216ec08956ac3ada2f0791b6bd435
@@ -61,54 +52,3 @@ jobs:
                   exit-code: 1
                   severity: CRITICAL,HIGH
                   ignore-unfixed: true
-
-            # docker/login-action v4.1.0
-            - name: Login to Zot registry
-              uses: docker/login-action@4907a6ddec9925e35a0a9e82d7399ccc52663121
-              if: github.event_name == 'release'
-              with:
-                  registry: ${{ env.REGISTRY }}
-                  username: ${{ secrets.ZOT_USERNAME }}
-                  password: ${{ secrets.ZOT_TOKEN }}
-
-            # docker/build-push-action v6.18.0
-            - name: Build and push image
-              uses: docker/build-push-action@263435318d21b8e681c14492fe198d362a7d2c83
-              if: github.event_name == 'release'
-              with:
-                  context: images/${{ matrix.image }}
-                  push: true
-                  tags: |
-                      ${{ env.IMAGE_REF }}:${{ env.RELEASE_TAG }}
-                      ${{ env.IMAGE_REF }}:latest
-                  cache-from: type=gha,scope=${{ matrix.image }}
-                  outputs: type=image,push=true,oci-mediatypes=true
-                  provenance: true
-                  sbom: true
-
-            - name: Resolve image digest
-              id: image
-              if: github.event_name == 'release'
-              run: |
-                  digest="$(docker buildx imagetools inspect "${IMAGE_REF}:${RELEASE_TAG}" --format '{{.Manifest.Digest}}')"
-                  echo "digest=${digest}" >> "${GITHUB_OUTPUT}"
-
-            # sigstore/cosign-installer v4.1.1
-            - uses: sigstore/cosign-installer@cad07c2e89fa2edd6e2d7bab4c1aa38e53f76003
-              if: github.event_name == 'release'
-
-            - name: Sign image digest
-              if: github.event_name == 'release'
-              env:
-                  COSIGN_PRIVATE_KEY: ${{ secrets.COSIGN_PRIVATE_KEY }}
-              run: |
-                  key_file="$(mktemp)"
-                  trap 'rm -f "${key_file}"' EXIT
-                  printf '%s' "${COSIGN_PRIVATE_KEY}" > "${key_file}"
-                  chmod 600 "${key_file}"
-
-                  cosign sign --yes \
-                      --new-bundle-format=false \
-                      --use-signing-config=false \
-                      --key "${key_file}" \
-                      "${IMAGE_REF}@${{ steps.image.outputs.digest }}"
