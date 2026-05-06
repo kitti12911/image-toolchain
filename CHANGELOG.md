@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.2.0](https://github.com/kitti12911/image-toolchain/compare/v1.1.0...v1.2.0) (2026-05-06)
+
+
+### Features
+
+* fix cloudflare upload limitation by slicing layer ([#7](https://github.com/kitti12911/image-toolchain/issues/7)) ([1f352ab](https://github.com/kitti12911/image-toolchain/commit/1f352ab49524974128793dad0f6a34741045ada2))
+
 ## [1.1.0](https://github.com/kitti12911/image-toolchain/compare/v1.0.1...v1.1.0) (2026-05-06)
 
 
