@@ -15,6 +15,8 @@ case "${profile}" in
 		docker run --rm "${image}" protoc-gen-go-grpc --version
 		docker run --rm "${image}" fieldmapgen -h
 		docker run --rm "${image}" patchfieldgen -h
+		docker run --rm "${image}" goose -version
+		docker run --rm "${image}" sqlfluff --version
 		;;
 	security)
 		docker run --rm "${image}" govulncheck -version
