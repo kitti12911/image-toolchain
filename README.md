@@ -6,7 +6,7 @@ Shared CI toolchain images for the homelab sandbox repositories.
 
 | Image                | Purpose                                      |
 | -------------------- | -------------------------------------------- |
-| `image-toolchain`    | Go, protobuf, Buf, and code generation tools |
+| `image-toolchain`    | Go, protobuf, Buf, migration, and code tools |
 | `security-toolchain` | Go vulnerability and Semgrep scanners        |
 
 Images are published to Zot:
@@ -30,6 +30,8 @@ zot.kittiaccess.work/kitti12911/security-toolchain:vx.y.z
 - protoc-gen-go-grpc
 - fieldmapgen
 - patchfieldgen
+- goose
+- sqlfluff
 
 `security-toolchain` includes:
 
