@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.4.0](https://github.com/kitti12911/image-toolchain/compare/v1.3.0...v1.4.0) (2026-05-07)
+
+
+### Features
+
+* upgrade to go 1.26.3 ([1baba86](https://github.com/kitti12911/image-toolchain/commit/1baba8606fc5d36cc94b9759e296001857b4c4b4))
+
 ## [1.3.0](https://github.com/kitti12911/image-toolchain/compare/v1.2.0...v1.3.0) (2026-05-07)
 
 
