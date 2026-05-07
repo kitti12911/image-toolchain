@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.3.0](https://github.com/kitti12911/image-toolchain/compare/v1.2.0...v1.3.0) (2026-05-07)
+
+
+### Features
+
+* add new tools to image-toolchain ([#9](https://github.com/kitti12911/image-toolchain/issues/9)) ([0bebd15](https://github.com/kitti12911/image-toolchain/commit/0bebd1504eb16bd30f9d06ed1fa3562c7efa63b9))
+* upgrade lib-orm to v2.6.0 ([0bebd15](https://github.com/kitti12911/image-toolchain/commit/0bebd1504eb16bd30f9d06ed1fa3562c7efa63b9))
+
 ## [1.2.0](https://github.com/kitti12911/image-toolchain/compare/v1.1.0...v1.2.0) (2026-05-06)
 
 
