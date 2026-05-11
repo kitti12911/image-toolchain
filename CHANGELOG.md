@@ -1,5 +1,16 @@
 # Changelog
 
+## [2.0.0](https://github.com/kitti12911/image-toolchain/compare/v1.6.0...v2.0.0) (2026-05-11)
+
+
+### ⚠ BREAKING CHANGES
+
+* make application rely on custom image instead of github actions for more compatible when transition to gitlab ci ([#17](https://github.com/kitti12911/image-toolchain/issues/17))
+
+### Features
+
+* make application rely on custom image instead of github actions for more compatible when transition to gitlab ci ([#17](https://github.com/kitti12911/image-toolchain/issues/17)) ([08eeebe](https://github.com/kitti12911/image-toolchain/commit/08eeebead621e3e9561f5d60c7fc93ec0250571a))
+
 ## [1.6.0](https://github.com/kitti12911/image-toolchain/compare/v1.5.0...v1.6.0) (2026-05-09)
 
 
