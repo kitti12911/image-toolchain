@@ -5,10 +5,11 @@ ENV PATH="/opt/sqlfluff/bin:${PATH}" \
 	PYTHONDONTWRITEBYTECODE=1
 
 LABEL org.opencontainers.image.source="https://github.com/kitti12911/image-toolchain"
-LABEL org.opencontainers.image.description="Go, protobuf, Buf, SQL migration, and custom generator CI toolchain"
+LABEL org.opencontainers.image.description="Go, protobuf, OpenAPI, Helm, and linting CI toolchain"
 
 RUN apk add --no-cache \
 	ca-certificates \
+	curl \
 	git \
 	make \
 	python3 \
@@ -29,5 +30,24 @@ RUN --mount=type=cache,target=/go/pkg/mod \
 	&& CGO_ENABLED=0 go install -trimpath -ldflags="-s -w" github.com/kitti12911/lib-orm/v2/cmd/fieldmapgen@v2.6.0 \
 	&& CGO_ENABLED=0 go install -trimpath -ldflags="-s -w" github.com/kitti12911/lib-orm/v2/cmd/patchfieldgen@v2.6.0 \
 	&& CGO_ENABLED=0 go install -trimpath -ldflags="-s -w" github.com/pressly/goose/v3/cmd/goose@v3.27.1
+
+RUN --mount=type=cache,target=/go/pkg/mod \
+	--mount=type=cache,target=/root/.cache/go-build \
+	CGO_ENABLED=0 go install -trimpath -ldflags="-s -w" github.com/golangci/golangci-lint/v2/cmd/golangci-lint@v2.12.1
+
+RUN --mount=type=cache,target=/go/pkg/mod \
+	--mount=type=cache,target=/root/.cache/go-build \
+	CGO_ENABLED=0 go install -trimpath -ldflags="-s -w" github.com/oasdiff/oasdiff@v1.14.0
+
+RUN arch="$(apk --print-arch)" \
+	&& case "${arch}" in \
+		x86_64) helm_arch="amd64" ;; \
+		aarch64) helm_arch="arm64" ;; \
+		*) echo "unsupported helm architecture: ${arch}" >&2; exit 1 ;; \
+	esac \
+	&& curl -fsSLo /tmp/helm.tar.gz "https://get.helm.sh/helm-v3.18.4-linux-${helm_arch}.tar.gz" \
+	&& tar -xzf /tmp/helm.tar.gz -C /tmp \
+	&& mv "/tmp/linux-${helm_arch}/helm" /usr/local/bin/helm \
+	&& rm -rf /tmp/helm.tar.gz "/tmp/linux-${helm_arch}"
 
 WORKDIR /workspace
