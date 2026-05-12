@@ -32,16 +32,6 @@
                 "(?<depName>@?[A-Za-z0-9_.-]+(?:/[A-Za-z0-9_.-]+)?)@(?<currentValue>\\d+\\.\\d+\\.\\d+(?:[-+][^\\s\\\\]+)?)"
             ],
             "datasourceTemplate": "npm"
-        },
-        {
-            "customType": "regex",
-            "description": "Update Trivy release version used by the supply-chain toolchain",
-            "managerFilePatterns": ["/(^|/)Dockerfile$/"],
-            "matchStrings": [
-                "ARG TRIVY_VERSION=(?<currentValue>\\d+\\.\\d+\\.\\d+)"
-            ],
-            "depNameTemplate": "aquasecurity/trivy",
-            "datasourceTemplate": "github-releases"
         }
     ],
     "reviewersFromCodeOwners": true,

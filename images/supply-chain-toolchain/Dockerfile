@@ -1,7 +1,5 @@
 FROM golang:1.26.3-alpine@sha256:91eda9776261207ea25fd06b5b7fed8d397dd2c0a283e77f2ab6e91bfa71079d AS builder
 
-ARG TRIVY_VERSION=0.70.0
-
 RUN apk add --no-cache \
 	ca-certificates \
 	git
@@ -9,8 +7,12 @@ RUN apk add --no-cache \
 RUN --mount=type=cache,target=/go/pkg/mod \
 	--mount=type=cache,target=/root/.cache/go-build \
 	CGO_ENABLED=0 go install -trimpath -ldflags="-s -w" github.com/zricethezav/gitleaks/v8@v8.30.1 \
-	&& wget -qO- https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh \
-		| sh -s -- -b /usr/local/bin "v${TRIVY_VERSION}" \
+	&& mkdir /tmp/trivy-build \
+	&& cd /tmp/trivy-build \
+	&& go mod init trivy-toolchain-build \
+	&& go get github.com/aquasecurity/trivy/cmd/trivy@v0.70.0 \
+		github.com/go-git/go-git/v5@v5.19.0 \
+	&& GOEXPERIMENT=jsonv2 CGO_ENABLED=0 go install -trimpath -ldflags="-s -w" github.com/aquasecurity/trivy/cmd/trivy \
 	&& mkdir /tmp/cosign-build \
 	&& cd /tmp/cosign-build \
 	&& go mod init cosign-toolchain-build \
@@ -32,7 +34,7 @@ RUN apk add --no-cache \
 	git
 
 COPY --from=builder /go/bin/gitleaks /usr/local/bin/gitleaks
-COPY --from=builder /usr/local/bin/trivy /usr/local/bin/trivy
+COPY --from=builder /go/bin/trivy /usr/local/bin/trivy
 COPY --from=builder /go/bin/cosign /usr/local/bin/cosign
 
 WORKDIR /workspace

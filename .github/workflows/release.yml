@@ -177,7 +177,7 @@ jobs:
             # actions/checkout v6.0.2
             - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
               with:
-                  ref: ${{ needs.release.outputs.tag_name }}
+                  ref: ${{ needs.plan.outputs.tag_name }}
 
             - name: Check release inputs
               run: ./scripts/ci/require-env.sh REGISTRY IMAGE_NAMESPACE IMAGE_REF RELEASE_TAG
