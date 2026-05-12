@@ -15,35 +15,15 @@ if [ "$#" -eq 0 ]; then
 	done
 fi
 
-cosign_key_file=""
-cleanup() {
-	if [ -n "${cosign_key_file}" ]; then
-		rm -f "${cosign_key_file}"
-	fi
-}
-trap cleanup EXIT
-
-if command -v cosign >/dev/null 2>&1; then
-	cosign_key_file="$(mktemp)"
-	printf '%s' "${COSIGN_PRIVATE_KEY:?COSIGN_PRIVATE_KEY is required}" > "${cosign_key_file}"
-	chmod 600 "${cosign_key_file}"
-
-	for ref in "$@"; do
-		cosign sign --yes \
-			--new-bundle-format=false \
-			--use-signing-config=false \
-			--key "${cosign_key_file}" \
-			"${ref}"
-	done
-	exit 0
-fi
-
 runner_image="${COSIGN_RUNNER_IMAGE:-gcr.io/projectsigstore/cosign:v2.6.3}"
+docker_config="${DOCKER_CONFIG:-${HOME}/.docker}"
 export COSIGN_PRIVATE_KEY="${COSIGN_PRIVATE_KEY:?COSIGN_PRIVATE_KEY is required}"
 
 for ref in "$@"; do
 	docker run --rm \
 		-e COSIGN_PRIVATE_KEY \
+		-e DOCKER_CONFIG=/root/.docker \
+		-v "${docker_config}:/root/.docker:ro" \
 		"${runner_image}" sign --yes \
 		--new-bundle-format=false \
 		--use-signing-config=false \

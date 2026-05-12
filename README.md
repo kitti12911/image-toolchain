@@ -102,8 +102,9 @@ images to signed semver and `latest` tags in the configured registry.
 
 Provider workflows should keep orchestration in YAML and call the reusable
 scripts under `scripts/ci/` for the shared container work. The scripts use raw
-Docker, Trivy, and Cosign commands so GitHub Actions and GitLab CI can pass the
-same inputs with different variable names.
+Docker commands, containerized Trivy and Cosign, and pinned semantic-release
+packages so GitHub Actions and GitLab CI can pass the same inputs with
+different variable names.
 
 Common inputs:
 
@@ -121,8 +122,8 @@ Common inputs:
 | `STAGING_IMAGE_REF`   | Temporary image tag to scan before promote   |
 | `ARCH_IMAGE_REF`      | Architecture-specific release tag            |
 | `COSIGN_PRIVATE_KEY`  | Cosign signing key                           |
-| `TRIVY_RUNNER_IMAGE`  | Optional Trivy container fallback image      |
-| `COSIGN_RUNNER_IMAGE` | Optional Cosign container fallback image     |
+| `TRIVY_RUNNER_IMAGE`  | Optional Trivy container image               |
+| `COSIGN_RUNNER_IMAGE` | Optional Cosign container image              |
 
 GitHub requires these repository variables and secrets:
 
