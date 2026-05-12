@@ -29,7 +29,7 @@ if [ "${status}" -ne 0 ]; then
 	exit "${status}"
 fi
 
-version="$(sed -n 's/.*The next release version is \([0-9][0-9.]*\).*/\1/p' "${log_file}" | tail -n 1)"
+version="$(sed -n 's/.*next release version is \([0-9][0-9.]*\).*/\1/p' "${log_file}" | tail -n 1)"
 
 if [ -z "${version}" ]; then
 	release_created=false
