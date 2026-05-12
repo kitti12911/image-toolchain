@@ -23,6 +23,15 @@
                 "pip install [^\\n]*?(?<depName>[A-Za-z0-9_.-]+)==(?<currentValue>\\d+\\.\\d+\\.\\d+(?:[-+][^\\s\\\\]+)?)"
             ],
             "datasourceTemplate": "pypi"
+        },
+        {
+            "customType": "regex",
+            "description": "Update npm tool versions installed in Dockerfiles",
+            "managerFilePatterns": ["/(^|/)Dockerfile$/"],
+            "matchStrings": [
+                "(?<depName>@?[A-Za-z0-9_.-]+(?:/[A-Za-z0-9_.-]+)?)@(?<currentValue>\\d+\\.\\d+\\.\\d+(?:[-+][^\\s\\\\]+)?)"
+            ],
+            "datasourceTemplate": "npm"
         }
     ],
     "reviewersFromCodeOwners": true,

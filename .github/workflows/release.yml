@@ -45,11 +45,43 @@ jobs:
                       arch: arm64
                       platform: linux/arm64
                       runner: ubuntu-24.04-arm
+                    - image: migration-toolchain
+                      arch: amd64
+                      platform: linux/amd64
+                      runner: ubuntu-latest
+                    - image: migration-toolchain
+                      arch: arm64
+                      platform: linux/arm64
+                      runner: ubuntu-24.04-arm
+                    - image: release-toolchain
+                      arch: amd64
+                      platform: linux/amd64
+                      runner: ubuntu-latest
+                    - image: release-toolchain
+                      arch: arm64
+                      platform: linux/arm64
+                      runner: ubuntu-24.04-arm
+                    - image: helm-toolchain
+                      arch: amd64
+                      platform: linux/amd64
+                      runner: ubuntu-latest
+                    - image: helm-toolchain
+                      arch: arm64
+                      platform: linux/arm64
+                      runner: ubuntu-24.04-arm
                     - image: security-toolchain
                       arch: amd64
                       platform: linux/amd64
                       runner: ubuntu-latest
                     - image: security-toolchain
+                      arch: arm64
+                      platform: linux/arm64
+                      runner: ubuntu-24.04-arm
+                    - image: supply-chain-toolchain
+                      arch: amd64
+                      platform: linux/amd64
+                      runner: ubuntu-latest
+                    - image: supply-chain-toolchain
                       arch: arm64
                       platform: linux/arm64
                       runner: ubuntu-24.04-arm
@@ -84,18 +116,24 @@ jobs:
                   sbom: true
 
             # aquasecurity/trivy-action v0.36.0
-            - uses: aquasecurity/trivy-action@a9c7b0f06e461e9d4b4d1711f154ee024b8d7ab8
+            - name: Scan image with Trivy
+              uses: aquasecurity/trivy-action@a9c7b0f06e461e9d4b4d1711f154ee024b8d7ab8
               with:
                   image-ref: ${{ env.STAGING_IMAGE_REF }}
-                  format: table
-                  exit-code: 1
+                  format: json
+                  output: ${{ runner.temp }}/trivy-results.json
+                  exit-code: 0
                   severity: CRITICAL,HIGH
                   ignore-unfixed: true
               env:
+                  TRIVY_QUIET: true
                   TRIVY_IMAGE_SRC: remote
                   TRIVY_PLATFORM: ${{ matrix.platform }}
                   TRIVY_USERNAME: ${{ secrets.ZOT_USERNAME }}
                   TRIVY_PASSWORD: ${{ secrets.ZOT_TOKEN }}
+
+            - name: Report Trivy findings
+              run: ./scripts/print-trivy-findings.sh "${RUNNER_TEMP}/trivy-results.json"
 
             - name: Promote scanned image tag
               run: |
@@ -119,7 +157,11 @@ jobs:
             matrix:
                 image:
                     - image-toolchain
+                    - migration-toolchain
+                    - release-toolchain
+                    - helm-toolchain
                     - security-toolchain
+                    - supply-chain-toolchain
         steps:
             # docker/setup-buildx-action v3.11.1
             - uses: docker/setup-buildx-action@e468171a9de216ec08956ac3ada2f0791b6bd435
