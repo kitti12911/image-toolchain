@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.1.0](https://github.com/kitti12911/image-toolchain/compare/v2.0.0...v2.1.0) (2026-05-12)
+
+
+### Features
+
+* generalize pipeline ([#21](https://github.com/kitti12911/image-toolchain/issues/21)) ([81d1164](https://github.com/kitti12911/image-toolchain/commit/81d1164321afccfda181eeab1e282bdc814cee71))
+
 ## [2.0.0](https://github.com/kitti12911/image-toolchain/compare/v1.6.0...v2.0.0) (2026-05-12)
 
 
