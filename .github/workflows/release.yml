@@ -19,6 +19,12 @@ jobs:
             release_created: ${{ steps.plan.outputs.release_created }}
             tag_name: ${{ steps.plan.outputs.tag_name }}
         steps:
+            - name: Install Git
+              run: |
+                  apt-get update
+                  apt-get install -y --no-install-recommends git
+                  rm -rf /var/lib/apt/lists/*
+
             # actions/checkout v6.0.2
             - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
               with:
@@ -144,6 +150,12 @@ jobs:
             - build
         if: needs.plan.outputs.release_created == 'true'
         steps:
+            - name: Install Git
+              run: |
+                  apt-get update
+                  apt-get install -y --no-install-recommends git
+                  rm -rf /var/lib/apt/lists/*
+
             # actions/checkout v6.0.2
             - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
               with:
@@ -205,11 +217,6 @@ jobs:
 
             - name: Create multi-arch manifest
               run: ./scripts/ci/publish-manifest.sh
-
-            - name: Install Cosign
-              run: ./scripts/ci/install-cosign.sh
-              env:
-                  COSIGN_INSTALL_DIR: ${{ runner.temp }}/bin
 
             - name: Sign image digest
               env:
