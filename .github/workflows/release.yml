@@ -171,7 +171,6 @@ jobs:
         runs-on: ubuntu-latest
         permissions:
             contents: read
-            id-token: write
         needs:
             - plan
             - release
@@ -226,3 +225,5 @@ jobs:
 
             - name: Sign image digest
               run: ./scripts/ci/sign-image.sh
+              env:
+                  COSIGN_PRIVATE_KEY: ${{ secrets.COSIGN_PRIVATE_KEY }}

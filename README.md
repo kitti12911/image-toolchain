@@ -102,7 +102,7 @@ images to signed semver and `latest` tags in the configured registry.
 
 Provider workflows should keep orchestration in YAML and call the reusable
 scripts under `scripts/ci/` for the shared container work. The scripts use raw
-Docker commands, containerized Trivy, runner-installed keyless Cosign signing,
+Docker commands, containerized Trivy, runner-installed Cosign key-pair signing,
 and pinned semantic-release packages so CI systems can pass the same inputs with
 different variable names.
 
@@ -131,10 +131,13 @@ GitHub requires these repository variables and secrets:
 | `TOOLCHAIN_IMAGE_NAMESPACE`   | Variable | Target registry namespace |
 | `TOOLCHAIN_REGISTRY_USERNAME` | Secret   | Registry login username   |
 | `TOOLCHAIN_REGISTRY_PASSWORD` | Secret   | Registry login token      |
+| `COSIGN_PRIVATE_KEY`          | Secret   | Private key matching Zot  |
 
 GitLab should map its own CI variables into the same script inputs rather than
 duplicating the build, scan, and publish commands. Signing also needs Cosign
-installed on the runner and a CI-provider keyless identity configured.
+installed on the runner and a private key matching the public key trusted by the
+target registry. If the private key is encrypted, also pass `COSIGN_PASSWORD`
+from the CI provider's secret store.
 
 ## Version Updates
 
