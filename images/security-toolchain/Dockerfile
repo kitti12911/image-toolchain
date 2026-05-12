@@ -18,7 +18,7 @@ RUN --mount=type=cache,target=/root/.cache/pip \
 
 RUN --mount=type=cache,target=/root/.cache/pip \
 	apk add --no-cache --virtual .strip-deps binutils \
-	&& /opt/semgrep/bin/python -m pip install --no-compile semgrep==1.161.0 \
+	&& /opt/semgrep/bin/python -m pip install --no-compile semgrep==1.162.0 \
 	&& strip --strip-unneeded /opt/semgrep/lib/python*/site-packages/semgrep/bin/semgrep-core \
 	&& /opt/semgrep/bin/python -m pip uninstall -y pip \
 	&& find /opt/semgrep -type d -name __pycache__ -prune -exec rm -rf {} + \
