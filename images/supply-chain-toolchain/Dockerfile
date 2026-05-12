@@ -7,7 +7,12 @@ RUN apk add --no-cache \
 RUN --mount=type=cache,target=/go/pkg/mod \
 	--mount=type=cache,target=/root/.cache/go-build \
 	CGO_ENABLED=0 go install -trimpath -ldflags="-s -w" github.com/zricethezav/gitleaks/v8@v8.30.1 \
-	&& GOEXPERIMENT=jsonv2 CGO_ENABLED=0 go install -trimpath -ldflags="-s -w" github.com/aquasecurity/trivy/cmd/trivy@v0.70.0 \
+	&& mkdir /tmp/trivy-build \
+	&& cd /tmp/trivy-build \
+	&& go mod init trivy-toolchain-build \
+	&& go get github.com/aquasecurity/trivy/cmd/trivy@v0.70.0 \
+		github.com/go-git/go-git/v5@v5.19.0 \
+	&& GOEXPERIMENT=jsonv2 CGO_ENABLED=0 go install -trimpath -ldflags="-s -w" github.com/aquasecurity/trivy/cmd/trivy \
 	&& mkdir /tmp/cosign-build \
 	&& cd /tmp/cosign-build \
 	&& go mod init cosign-toolchain-build \
