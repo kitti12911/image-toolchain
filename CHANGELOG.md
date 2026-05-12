@@ -1,5 +1,16 @@
 # Changelog
 
+## [2.0.0](https://github.com/kitti12911/image-toolchain/compare/v1.6.0...v2.0.0) (2026-05-12)
+
+
+### ⚠ BREAKING CHANGES
+
+* split image to support general used ([#19](https://github.com/kitti12911/image-toolchain/issues/19))
+
+### Features
+
+* split image to support general used ([#19](https://github.com/kitti12911/image-toolchain/issues/19)) ([74febbc](https://github.com/kitti12911/image-toolchain/commit/74febbc3bf7132cbe3acf713b14add1644d0e77f))
+
 ## [1.6.0](https://github.com/kitti12911/image-toolchain/compare/v1.5.0...v1.6.0) (2026-05-09)
 
 
