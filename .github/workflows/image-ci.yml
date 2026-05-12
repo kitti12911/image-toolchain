@@ -76,33 +76,26 @@ jobs:
             # actions/checkout v6.0.2
             - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
 
-            # docker/setup-buildx-action v3.11.1
-            - uses: docker/setup-buildx-action@e468171a9de216ec08956ac3ada2f0791b6bd435
+            - name: Set up Docker Buildx
+              run: ./scripts/ci/setup-buildx.sh
 
-            # docker/build-push-action v6.18.0
             - name: Build image for scan
-              uses: docker/build-push-action@263435318d21b8e681c14492fe198d362a7d2c83
-              with:
-                  context: images/${{ matrix.image }}
-                  load: true
-                  platforms: ${{ matrix.platform }}
-                  tags: ${{ matrix.image }}:scan-${{ matrix.arch }}
-                  cache-from: type=gha,scope=${{ matrix.image }}-${{ matrix.arch }}
-                  cache-to: type=gha,mode=max,scope=${{ matrix.image }}-${{ matrix.arch }}
-                  provenance: false
-                  sbom: false
-
-            # aquasecurity/trivy-action v0.36.0
-            - name: Scan image with Trivy
-              uses: aquasecurity/trivy-action@a9c7b0f06e461e9d4b4d1711f154ee024b8d7ab8
-              with:
-                  image-ref: ${{ matrix.image }}:scan-${{ matrix.arch }}
-                  format: json
-                  output: ${{ runner.temp }}/trivy-results.json
-                  exit-code: 0
-                  severity: CRITICAL,HIGH
-                  ignore-unfixed: true
+              run: ./scripts/ci/build-image.sh
               env:
+                  IMAGE_CONTEXT: images/${{ matrix.image }}
+                  IMAGE_PLATFORM: ${{ matrix.platform }}
+                  IMAGE_TAG: ${{ matrix.image }}:scan-${{ matrix.arch }}
+                  BUILD_CACHE_FROM: type=gha,scope=${{ matrix.image }}-${{ matrix.arch }}
+                  BUILD_CACHE_TO: type=gha,mode=max,scope=${{ matrix.image }}-${{ matrix.arch }}
+                  BUILD_LOAD: true
+                  BUILD_PROVENANCE: false
+                  BUILD_SBOM: false
+
+            - name: Scan image with Trivy
+              run: ./scripts/ci/scan-image.sh
+              env:
+                  TRIVY_IMAGE_REF: ${{ matrix.image }}:scan-${{ matrix.arch }}
+                  TRIVY_REPORT: ${{ runner.temp }}/trivy-results.json
                   TRIVY_QUIET: true
 
             - name: Report Trivy findings

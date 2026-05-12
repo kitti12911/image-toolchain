@@ -13,15 +13,15 @@ Shared CI toolchain images for the homelab sandbox repositories.
 | `security-toolchain`     | Go vulnerability and Semgrep code scanners        |
 | `supply-chain-toolchain` | Trivy, Gitleaks, and Cosign security tooling      |
 
-Images are published to Zot:
+Images are published to the configured registry:
 
 ```text
-zot.kittiaccess.work/kitti12911/image-toolchain:vx.y.z
-zot.kittiaccess.work/kitti12911/migration-toolchain:vx.y.z
-zot.kittiaccess.work/kitti12911/release-toolchain:vx.y.z
-zot.kittiaccess.work/kitti12911/helm-toolchain:vx.y.z
-zot.kittiaccess.work/kitti12911/security-toolchain:vx.y.z
-zot.kittiaccess.work/kitti12911/supply-chain-toolchain:vx.y.z
+${TOOLCHAIN_REGISTRY}/${TOOLCHAIN_IMAGE_NAMESPACE}/image-toolchain:vx.y.z
+${TOOLCHAIN_REGISTRY}/${TOOLCHAIN_IMAGE_NAMESPACE}/migration-toolchain:vx.y.z
+${TOOLCHAIN_REGISTRY}/${TOOLCHAIN_IMAGE_NAMESPACE}/release-toolchain:vx.y.z
+${TOOLCHAIN_REGISTRY}/${TOOLCHAIN_IMAGE_NAMESPACE}/helm-toolchain:vx.y.z
+${TOOLCHAIN_REGISTRY}/${TOOLCHAIN_IMAGE_NAMESPACE}/security-toolchain:vx.y.z
+${TOOLCHAIN_REGISTRY}/${TOOLCHAIN_IMAGE_NAMESPACE}/supply-chain-toolchain:vx.y.z
 ```
 
 ## Included Tools
@@ -93,7 +93,47 @@ zot.kittiaccess.work/kitti12911/supply-chain-toolchain:vx.y.z
 
 Release Please creates semver GitHub releases from `main`. The image workflow
 builds and scans all toolchain images for pull requests, then publishes signed
-semver and `latest` tags to Zot when a release is published.
+semver and `latest` tags to the configured registry when a release is
+published.
+
+## Portable CI Scripts
+
+Provider workflows should keep orchestration in YAML and call the reusable
+scripts under `scripts/ci/` for the shared container work. The scripts use raw
+Docker, Trivy, and Cosign commands so GitHub Actions and GitLab CI can pass the
+same inputs with different variable names.
+
+Common inputs:
+
+| Variable              | Description                                  |
+| --------------------- | -------------------------------------------- |
+| `REGISTRY`            | Target registry host                         |
+| `REGISTRY_USERNAME`   | Registry login username                      |
+| `REGISTRY_PASSWORD`   | Registry login token or password             |
+| `IMAGE_CONTEXT`       | Docker build context, such as `images/image` |
+| `IMAGE_PLATFORM`      | Docker platform, such as `linux/amd64`       |
+| `IMAGE_TAG`           | Full image tag for `build-image.sh`          |
+| `IMAGE_REF`           | Image repository without tag                 |
+| `RELEASE_TAG`         | Semver release tag                           |
+| `IMAGE_ARCHES`        | Space-separated manifest arches              |
+| `STAGING_IMAGE_REF`   | Temporary image tag to scan before promote   |
+| `ARCH_IMAGE_REF`      | Architecture-specific release tag            |
+| `COSIGN_PRIVATE_KEY`  | Cosign signing key                           |
+| `TRIVY_RUNNER_IMAGE`  | Optional Trivy container fallback image      |
+| `COSIGN_RUNNER_IMAGE` | Optional Cosign container fallback image     |
+
+GitHub requires these repository variables and secrets:
+
+| Name                          | Type     | Description               |
+| ----------------------------- | -------- | ------------------------- |
+| `TOOLCHAIN_REGISTRY`          | Variable | Target registry host      |
+| `TOOLCHAIN_IMAGE_NAMESPACE`   | Variable | Target registry namespace |
+| `TOOLCHAIN_REGISTRY_USERNAME` | Secret   | Registry login username   |
+| `TOOLCHAIN_REGISTRY_PASSWORD` | Secret   | Registry login token      |
+| `COSIGN_PRIVATE_KEY`          | Secret   | Cosign signing key        |
+
+GitLab should map its own CI variables into the same script inputs rather than
+duplicating the build, scan, publish, and sign commands.
 
 ## Version Updates
 
