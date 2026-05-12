@@ -169,6 +169,9 @@ jobs:
     publish:
         name: Publish ${{ matrix.image }} Manifest
         runs-on: ubuntu-latest
+        permissions:
+            contents: read
+            id-token: write
         needs:
             - plan
             - release
@@ -207,6 +210,9 @@ jobs:
                   REGISTRY_USERNAME: ${{ secrets.TOOLCHAIN_REGISTRY_USERNAME }}
                   REGISTRY_PASSWORD: ${{ secrets.TOOLCHAIN_REGISTRY_PASSWORD }}
 
+            # sigstore/cosign-installer v4.1.1
+            - uses: sigstore/cosign-installer@cad07c2e89fa2edd6e2d7bab4c1aa38e53f76003
+
             - name: Promote scanned image tags
               run: |
                   for arch in amd64 arm64; do
@@ -219,8 +225,4 @@ jobs:
               run: ./scripts/ci/publish-manifest.sh
 
             - name: Sign image digest
-              env:
-                  COSIGN_PRIVATE_KEY: ${{ secrets.COSIGN_PRIVATE_KEY }}
-                  REGISTRY_USERNAME: ${{ secrets.TOOLCHAIN_REGISTRY_USERNAME }}
-                  REGISTRY_PASSWORD: ${{ secrets.TOOLCHAIN_REGISTRY_PASSWORD }}
               run: ./scripts/ci/sign-image.sh

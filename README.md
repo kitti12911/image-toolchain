@@ -102,28 +102,26 @@ images to signed semver and `latest` tags in the configured registry.
 
 Provider workflows should keep orchestration in YAML and call the reusable
 scripts under `scripts/ci/` for the shared container work. The scripts use raw
-Docker commands, containerized Trivy and Cosign, and pinned semantic-release
-packages so GitHub Actions and GitLab CI can pass the same inputs with
+Docker commands, containerized Trivy, runner-installed keyless Cosign signing,
+and pinned semantic-release packages so CI systems can pass the same inputs with
 different variable names.
 
 Common inputs:
 
-| Variable              | Description                                  |
-| --------------------- | -------------------------------------------- |
-| `REGISTRY`            | Target registry host                         |
-| `REGISTRY_USERNAME`   | Registry login username                      |
-| `REGISTRY_PASSWORD`   | Registry login token or password             |
-| `IMAGE_CONTEXT`       | Docker build context, such as `images/image` |
-| `IMAGE_PLATFORM`      | Docker platform, such as `linux/amd64`       |
-| `IMAGE_TAG`           | Full image tag for `build-image.sh`          |
-| `IMAGE_REF`           | Image repository without tag                 |
-| `RELEASE_TAG`         | Semver release tag                           |
-| `IMAGE_ARCHES`        | Space-separated manifest arches              |
-| `STAGING_IMAGE_REF`   | Temporary image tag to scan before promote   |
-| `ARCH_IMAGE_REF`      | Architecture-specific release tag            |
-| `COSIGN_PRIVATE_KEY`  | Cosign signing key                           |
-| `TRIVY_RUNNER_IMAGE`  | Optional Trivy container image               |
-| `COSIGN_RUNNER_IMAGE` | Optional Cosign container image              |
+| Variable             | Description                                  |
+| -------------------- | -------------------------------------------- |
+| `REGISTRY`           | Target registry host                         |
+| `REGISTRY_USERNAME`  | Registry login username                      |
+| `REGISTRY_PASSWORD`  | Registry login token or password             |
+| `IMAGE_CONTEXT`      | Docker build context, such as `images/image` |
+| `IMAGE_PLATFORM`     | Docker platform, such as `linux/amd64`       |
+| `IMAGE_TAG`          | Full image tag for `build-image.sh`          |
+| `IMAGE_REF`          | Image repository without tag                 |
+| `RELEASE_TAG`        | Semver release tag                           |
+| `IMAGE_ARCHES`       | Space-separated manifest arches              |
+| `STAGING_IMAGE_REF`  | Temporary image tag to scan before promote   |
+| `ARCH_IMAGE_REF`     | Architecture-specific release tag            |
+| `TRIVY_RUNNER_IMAGE` | Optional Trivy container image               |
 
 GitHub requires these repository variables and secrets:
 
@@ -133,10 +131,10 @@ GitHub requires these repository variables and secrets:
 | `TOOLCHAIN_IMAGE_NAMESPACE`   | Variable | Target registry namespace |
 | `TOOLCHAIN_REGISTRY_USERNAME` | Secret   | Registry login username   |
 | `TOOLCHAIN_REGISTRY_PASSWORD` | Secret   | Registry login token      |
-| `COSIGN_PRIVATE_KEY`          | Secret   | Cosign signing key        |
 
 GitLab should map its own CI variables into the same script inputs rather than
-duplicating the build, scan, publish, and sign commands.
+duplicating the build, scan, and publish commands. Signing also needs Cosign
+installed on the runner and a CI-provider keyless identity configured.
 
 ## Version Updates
 
