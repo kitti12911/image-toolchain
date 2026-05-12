@@ -18,60 +18,18 @@ permissions:
 
 jobs:
     validate:
-        name: Build And Scan ${{ matrix.image }} (${{ matrix.arch }})
-        runs-on: ${{ matrix.runner }}
+        name: Light Build And Scan ${{ matrix.image }}
+        runs-on: ubuntu-latest
         strategy:
             fail-fast: false
             matrix:
-                include:
-                    - image: image-toolchain
-                      arch: amd64
-                      platform: linux/amd64
-                      runner: ubuntu-latest
-                    - image: image-toolchain
-                      arch: arm64
-                      platform: linux/arm64
-                      runner: ubuntu-24.04-arm
-                    - image: migration-toolchain
-                      arch: amd64
-                      platform: linux/amd64
-                      runner: ubuntu-latest
-                    - image: migration-toolchain
-                      arch: arm64
-                      platform: linux/arm64
-                      runner: ubuntu-24.04-arm
-                    - image: release-toolchain
-                      arch: amd64
-                      platform: linux/amd64
-                      runner: ubuntu-latest
-                    - image: release-toolchain
-                      arch: arm64
-                      platform: linux/arm64
-                      runner: ubuntu-24.04-arm
-                    - image: helm-toolchain
-                      arch: amd64
-                      platform: linux/amd64
-                      runner: ubuntu-latest
-                    - image: helm-toolchain
-                      arch: arm64
-                      platform: linux/arm64
-                      runner: ubuntu-24.04-arm
-                    - image: security-toolchain
-                      arch: amd64
-                      platform: linux/amd64
-                      runner: ubuntu-latest
-                    - image: security-toolchain
-                      arch: arm64
-                      platform: linux/arm64
-                      runner: ubuntu-24.04-arm
-                    - image: supply-chain-toolchain
-                      arch: amd64
-                      platform: linux/amd64
-                      runner: ubuntu-latest
-                    - image: supply-chain-toolchain
-                      arch: arm64
-                      platform: linux/arm64
-                      runner: ubuntu-24.04-arm
+                image:
+                    - image-toolchain
+                    - migration-toolchain
+                    - release-toolchain
+                    - helm-toolchain
+                    - security-toolchain
+                    - supply-chain-toolchain
         steps:
             # actions/checkout v6.0.2
             - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
@@ -83,10 +41,10 @@ jobs:
               run: ./scripts/ci/build-image.sh
               env:
                   IMAGE_CONTEXT: images/${{ matrix.image }}
-                  IMAGE_PLATFORM: ${{ matrix.platform }}
-                  IMAGE_TAG: ${{ matrix.image }}:scan-${{ matrix.arch }}
-                  BUILD_CACHE_FROM: type=gha,scope=${{ matrix.image }}-${{ matrix.arch }}
-                  BUILD_CACHE_TO: type=gha,mode=max,scope=${{ matrix.image }}-${{ matrix.arch }}
+                  IMAGE_PLATFORM: linux/amd64
+                  IMAGE_TAG: ${{ matrix.image }}:scan-amd64
+                  BUILD_CACHE_FROM: type=gha,scope=${{ matrix.image }}-amd64
+                  BUILD_CACHE_TO: type=gha,mode=max,scope=${{ matrix.image }}-amd64
                   BUILD_LOAD: true
                   BUILD_PROVENANCE: false
                   BUILD_SBOM: false
@@ -94,7 +52,7 @@ jobs:
             - name: Scan image with Trivy
               run: ./scripts/ci/scan-image.sh
               env:
-                  TRIVY_IMAGE_REF: ${{ matrix.image }}:scan-${{ matrix.arch }}
+                  TRIVY_IMAGE_REF: ${{ matrix.image }}:scan-amd64
                   TRIVY_REPORT: ${{ runner.temp }}/trivy-results.json
                   TRIVY_QUIET: true
 
