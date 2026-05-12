@@ -91,10 +91,12 @@ ${TOOLCHAIN_REGISTRY}/${TOOLCHAIN_IMAGE_NAMESPACE}/supply-chain-toolchain:vx.y.z
 
 ## Publishing
 
-Release Please creates semver GitHub releases from `main`. The image workflow
-builds and scans all toolchain images for pull requests, then publishes signed
-semver and `latest` tags to the configured registry when a release is
-published.
+Semantic-release creates semver GitHub releases from `main`. Pull requests run
+a lightweight `linux/amd64` build and local Trivy scan. Main branch pushes first
+calculate the next semantic-release tag; when a release is needed, the workflow
+builds and pushes staging images, scans those staging images, publishes the
+GitHub release only after the scans pass, and then promotes the scanned staging
+images to signed semver and `latest` tags in the configured registry.
 
 ## Portable CI Scripts
 
