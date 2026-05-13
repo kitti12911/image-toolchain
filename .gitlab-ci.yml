@@ -81,6 +81,17 @@ validate:image:
           changes: *image_changes
     script:
         - ./scripts/ci/setup-buildx.sh
+        - |
+            module_token="${GITLAB_GO_MODULE_TOKEN:-${GL_TOKEN:-${GITLAB_TOKEN:-}}}"
+            if [ "${TOOLCHAIN_IMAGE}" = "image-toolchain" ] && [ -z "${module_token}" ]; then
+                echo "GITLAB_GO_MODULE_TOKEN, GL_TOKEN, or GITLAB_TOKEN is required to build image-toolchain with private lib-orm." >&2
+                exit 2
+            fi
+            if [ -n "${module_token}" ]; then
+                gitlab_module_username="${GITLAB_GO_MODULE_USERNAME:-oauth2}"
+                printf '[url "https://%s:%s@gitlab.bu8-sd.com/sdo/pharse-3/lib-orm.git"]\n\tinsteadOf = https://github.com/kitti12911/lib-orm\n' "${gitlab_module_username}" "${module_token}" > go-gitconfig
+                export BUILD_SECRET="id=go_gitconfig,src=${CI_PROJECT_DIR}/go-gitconfig"
+            fi
         - >
             IMAGE_CONTEXT="images/${TOOLCHAIN_IMAGE}"
             IMAGE_PLATFORM="linux/amd64"
@@ -151,6 +162,17 @@ plan:
         - ./scripts/ci/require-env.sh REGISTRY IMAGE_NAMESPACE STAGING_IMAGE_REF
         - ./scripts/ci/setup-buildx.sh
         - REGISTRY_USERNAME="${TOOLCHAIN_REGISTRY_USERNAME}" REGISTRY_PASSWORD="${TOOLCHAIN_REGISTRY_PASSWORD}" ./scripts/ci/login-registry.sh
+        - |
+            module_token="${GITLAB_GO_MODULE_TOKEN:-${GL_TOKEN:-${GITLAB_TOKEN:-}}}"
+            if [ "${TOOLCHAIN_IMAGE}" = "image-toolchain" ] && [ -z "${module_token}" ]; then
+                echo "GITLAB_GO_MODULE_TOKEN, GL_TOKEN, or GITLAB_TOKEN is required to build image-toolchain with private lib-orm." >&2
+                exit 2
+            fi
+            if [ -n "${module_token}" ]; then
+                gitlab_module_username="${GITLAB_GO_MODULE_USERNAME:-oauth2}"
+                printf '[url "https://%s:%s@gitlab.bu8-sd.com/sdo/pharse-3/lib-orm.git"]\n\tinsteadOf = https://github.com/kitti12911/lib-orm\n' "${gitlab_module_username}" "${module_token}" > go-gitconfig
+                export BUILD_SECRET="id=go_gitconfig,src=${CI_PROJECT_DIR}/go-gitconfig"
+            fi
         - >
             IMAGE_CONTEXT="images/${TOOLCHAIN_IMAGE}"
             IMAGE_PLATFORM="${IMAGE_PLATFORM}"

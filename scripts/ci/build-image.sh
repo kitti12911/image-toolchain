@@ -17,6 +17,16 @@ if [ -n "${BUILD_CACHE_TO:-}" ]; then
 	set -- "$@" --cache-to "${BUILD_CACHE_TO}"
 fi
 
+if [ -n "${BUILD_SECRET:-}" ]; then
+	set -- "$@" --secret "${BUILD_SECRET}"
+fi
+
+if [ -n "${BUILD_SECRETS:-}" ]; then
+	for secret in ${BUILD_SECRETS}; do
+		set -- "$@" --secret "${secret}"
+	done
+fi
+
 if [ -n "${BUILD_OUTPUT:-}" ]; then
 	set -- "$@" --output "${BUILD_OUTPUT}"
 fi

@@ -9,9 +9,11 @@ RUN apk add --no-cache \
 	make \
 	protobuf
 
-RUN --mount=type=cache,target=/go/pkg/mod \
+RUN --mount=type=secret,id=go_gitconfig,target=/root/.gitconfig,required=false \
+	--mount=type=cache,target=/go/pkg/mod \
 	--mount=type=cache,target=/root/.cache/go-build \
-	CGO_ENABLED=0 go install -trimpath -ldflags="-s -w" github.com/bufbuild/buf/cmd/buf@v1.69.0 \
+	export GOPRIVATE='github.com/kitti12911/*' \
+	&& CGO_ENABLED=0 go install -trimpath -ldflags="-s -w" github.com/bufbuild/buf/cmd/buf@v1.69.0 \
 	&& CGO_ENABLED=0 go install -trimpath -ldflags="-s -w" github.com/golangci/golangci-lint/v2/cmd/golangci-lint@v2.12.2 \
 	&& CGO_ENABLED=0 go install -trimpath -ldflags="-s -w" github.com/oasdiff/oasdiff@v1.15.3 \
 	&& CGO_ENABLED=0 go install -trimpath -ldflags="-s -w" google.golang.org/protobuf/cmd/protoc-gen-go@v1.36.11 \

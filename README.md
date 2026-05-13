@@ -147,18 +147,23 @@ your runner uses a different name:
 
 GitLab requires these variables and secrets:
 
-| Name                          | Type     | Description                               |
-| ----------------------------- | -------- | ----------------------------------------- |
-| `TOOLCHAIN_REGISTRY`          | Variable | Target registry host                      |
-| `TOOLCHAIN_IMAGE_NAMESPACE`   | Variable | Target registry namespace                 |
-| `TOOLCHAIN_REGISTRY_USERNAME` | Secret   | Registry login username                   |
-| `TOOLCHAIN_REGISTRY_PASSWORD` | Secret   | Registry login token                      |
-| `GITLAB_TOKEN` or `GL_TOKEN`  | Secret   | GitLab API token for semantic-release     |
-| `COSIGN_PRIVATE_KEY`          | Secret   | Private key matching the trusted registry |
+| Name                          | Type     | Description                                |
+| ----------------------------- | -------- | ------------------------------------------ |
+| `TOOLCHAIN_REGISTRY`          | Variable | Target registry host                       |
+| `TOOLCHAIN_IMAGE_NAMESPACE`   | Variable | Target registry namespace                  |
+| `TOOLCHAIN_REGISTRY_USERNAME` | Secret   | Registry login username                    |
+| `TOOLCHAIN_REGISTRY_PASSWORD` | Secret   | Registry login token                       |
+| `GITLAB_TOKEN` or `GL_TOKEN`  | Secret   | GitLab API token for semantic-release      |
+| `GITLAB_GO_MODULE_TOKEN`      | Secret   | GitLab token for private Go module reads   |
+| `GITLAB_GO_MODULE_USERNAME`   | Variable | Optional token username, defaults `oauth2` |
+| `COSIGN_PRIVATE_KEY`          | Secret   | Private key matching the trusted registry  |
 
 Use a project access token, group access token, or personal access token with
 Developer or higher role. The token needs `api` for GitLab releases and
 `write_repository` for semantic-release tag pushes in a private repository.
+`GITLAB_GO_MODULE_TOKEN` needs `read_repository` access to
+`https://gitlab.bu8-sd.com/sdo/pharse-3/lib-orm.git`; if it is not set, the
+pipeline falls back to `GL_TOKEN` or `GITLAB_TOKEN`.
 
 If the private key is encrypted, also pass `COSIGN_PASSWORD` from the CI
 provider's secret store. The GitLab publish job installs Cosign in the Docker
