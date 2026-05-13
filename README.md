@@ -56,6 +56,7 @@ ${TOOLCHAIN_REGISTRY}/${TOOLCHAIN_IMAGE_NAMESPACE}/supply-chain-toolchain:vx.y.z
 - @semantic-release/commit-analyzer
 - @semantic-release/release-notes-generator
 - @semantic-release/github
+- @semantic-release/gitlab
 - conventional-changelog-conventionalcommits
 
 `helm-toolchain` includes:
@@ -91,12 +92,13 @@ ${TOOLCHAIN_REGISTRY}/${TOOLCHAIN_IMAGE_NAMESPACE}/supply-chain-toolchain:vx.y.z
 
 ## Publishing
 
-Semantic-release creates semver GitHub releases from `main`. Pull requests run
-a lightweight `linux/amd64` build and local Trivy scan. Main branch pushes first
-calculate the next semantic-release tag; when a release is needed, the workflow
-builds and pushes staging images, scans those staging images, publishes the
-GitHub release only after the scans pass, and then promotes the scanned staging
-images to signed semver and `latest` tags in the configured registry.
+Semantic-release creates semver releases from `main` on the current CI provider.
+Pull requests or merge requests run a lightweight `linux/amd64` build and local
+Trivy scan. Main branch pushes first calculate the next semantic-release tag;
+when a release is needed, the workflow builds and pushes staging images, scans
+those staging images, publishes the provider release only after the scans pass,
+and then promotes the scanned staging images to signed semver and `latest` tags
+in the configured registry.
 
 ## Portable CI Scripts
 
@@ -133,11 +135,34 @@ GitHub requires these repository variables and secrets:
 | `TOOLCHAIN_REGISTRY_PASSWORD` | Secret   | Registry login token      |
 | `COSIGN_PRIVATE_KEY`          | Secret   | Private key matching Zot  |
 
-GitLab should map its own CI variables into the same script inputs rather than
-duplicating the build, scan, and publish commands. Signing also needs Cosign
-installed on the runner and a private key matching the public key trusted by the
-target registry. If the private key is encrypted, also pass `COSIGN_PASSWORD`
-from the CI provider's secret store.
+GitLab uses `.gitlab-ci.yml` as the provider wrapper around the same scripts.
+The pipeline publishes amd64-only images because the GitLab deployment target is
+amd64-only. It expects a Docker-capable amd64 runner selected by runner tag. The
+default tag is `amd64`; override this GitLab variable if your runner uses a
+different name:
+
+| Name                      | Default | Description                 |
+| ------------------------- | ------- | --------------------------- |
+| `GITLAB_AMD64_RUNNER_TAG` | `amd64` | Runner tag for amd64 builds |
+
+GitLab requires these variables and secrets:
+
+| Name                          | Type     | Description                               |
+| ----------------------------- | -------- | ----------------------------------------- |
+| `TOOLCHAIN_REGISTRY`          | Variable | Target registry host                      |
+| `TOOLCHAIN_IMAGE_NAMESPACE`   | Variable | Target registry namespace                 |
+| `TOOLCHAIN_REGISTRY_USERNAME` | Secret   | Registry login username                   |
+| `TOOLCHAIN_REGISTRY_PASSWORD` | Secret   | Registry login token                      |
+| `GITLAB_TOKEN` or `GL_TOKEN`  | Secret   | GitLab API token for semantic-release     |
+| `COSIGN_PRIVATE_KEY`          | Secret   | Private key matching the trusted registry |
+
+Use a project access token, group access token, or personal access token with
+Developer or higher role. The token needs `api` for GitLab releases and
+`write_repository` for semantic-release tag pushes in a private repository.
+
+If the private key is encrypted, also pass `COSIGN_PASSWORD` from the CI
+provider's secret store. The GitLab publish job installs Cosign in the Docker
+CLI job image before calling `scripts/ci/sign-image.sh`.
 
 ## Version Updates
 

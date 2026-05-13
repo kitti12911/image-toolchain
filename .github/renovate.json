@@ -4,7 +4,12 @@
     "timezone": "Asia/Bangkok",
     "schedule": ["* 0-4 1 * *"],
     "updateNotScheduled": false,
-    "enabledManagers": ["dockerfile", "github-actions", "custom.regex"],
+    "enabledManagers": [
+        "dockerfile",
+        "github-actions",
+        "gitlabci",
+        "custom.regex"
+    ],
     "customManagers": [
         {
             "customType": "regex",
@@ -38,7 +43,8 @@
             "description": "Update npm tool versions used by CI scripts and workflows",
             "managerFilePatterns": [
                 "/(^|/)scripts/.*\\.sh$/",
-                "/(^|/)\\.github/workflows/.*\\.ya?ml$/"
+                "/(^|/)\\.github/workflows/.*\\.ya?ml$/",
+                "/(^|/)\\.gitlab-ci\\.ya?ml$/"
             ],
             "matchStrings": [
                 "(?:--package|npx --yes) (?<depName>@?[A-Za-z0-9_.-]+(?:/[A-Za-z0-9_.-]+)?)@(?<currentValue>\\d+\\.\\d+\\.\\d+(?:[-+][^\\s\\\\]+)?)"
