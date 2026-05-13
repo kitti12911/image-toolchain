@@ -138,12 +138,12 @@ GitHub requires these repository variables and secrets:
 GitLab uses `.gitlab-ci.yml` as the provider wrapper around the same scripts.
 The pipeline publishes amd64-only images because the GitLab deployment target is
 amd64-only. It expects a Docker-capable amd64 runner selected by runner tag. The
-default tag is `amd64`; override this GitLab variable if your runner uses a
-different name:
+default tag matches the current private runner; override this GitLab variable if
+your runner uses a different name:
 
-| Name                      | Default | Description                 |
-| ------------------------- | ------- | --------------------------- |
-| `GITLAB_AMD64_RUNNER_TAG` | `amd64` | Runner tag for amd64 builds |
+| Name                      | Default                            | Description                 |
+| ------------------------- | ---------------------------------- | --------------------------- |
+| `GITLAB_AMD64_RUNNER_TAG` | `solution-principle.gitlab-bu8-sd` | Runner tag for amd64 builds |
 
 GitLab requires these variables and secrets:
 

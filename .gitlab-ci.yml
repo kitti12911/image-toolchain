@@ -13,7 +13,7 @@ workflow:
 
 variables:
     GIT_DEPTH: "0"
-    GITLAB_AMD64_RUNNER_TAG: "amd64"
+    GITLAB_AMD64_RUNNER_TAG: "solution-principle.gitlab-bu8-sd"
     DOCKER_HOST: "tcp://docker:2375"
     DOCKER_TLS_CERTDIR: ""
     DOCKER_DRIVER: "overlay2"
@@ -52,6 +52,8 @@ variables:
 markdownlint:
     stage: lint
     image: node:24.10.0-bookworm@sha256:06e54ecf113a30f0ff9a1d309866a5924d3bda4389eab11a0e1e92f3251d915d
+    tags:
+        - $GITLAB_AMD64_RUNNER_TAG
     rules:
         - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
           changes: *markdown_changes
@@ -97,6 +99,8 @@ validate:image:
 plan:
     stage: plan
     image: node:24.10.0-bookworm@sha256:06e54ecf113a30f0ff9a1d309866a5924d3bda4389eab11a0e1e92f3251d915d
+    tags:
+        - $GITLAB_AMD64_RUNNER_TAG
     rules:
         - if: '$CI_COMMIT_BRANCH == "main"'
     script:
@@ -177,6 +181,8 @@ build:amd64:
 release:
     stage: release
     image: node:24.10.0-bookworm@sha256:06e54ecf113a30f0ff9a1d309866a5924d3bda4389eab11a0e1e92f3251d915d
+    tags:
+        - $GITLAB_AMD64_RUNNER_TAG
     needs:
         - job: plan
           artifacts: true
