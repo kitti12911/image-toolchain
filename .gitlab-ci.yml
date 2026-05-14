@@ -274,3 +274,28 @@ publish:manifest:
             done
         - ./scripts/ci/publish-manifest.sh
         - ./scripts/ci/sign-image.sh
+
+sync-vars:
+    extends: .docker_job
+    stage: publish
+    tags:
+        - $GITLAB_AMD64_RUNNER_TAG
+    needs:
+        - job: plan
+          artifacts: true
+        - job: publish:manifest
+    rules:
+        - if: '$CI_COMMIT_BRANCH == "main"'
+    variables:
+        REGISTRY: $TOOLCHAIN_REGISTRY
+        IMAGE_NAMESPACE: $TOOLCHAIN_IMAGE_NAMESPACE
+    script:
+        - |
+            if [ "${RELEASE_CREATED:-false}" != "true" ]; then
+                echo "No semantic release planned; skipping variable sync."
+                exit 0
+            fi
+        - export RELEASE_TAG="${RELEASE_TAG:?RELEASE_TAG is required}"
+        - ./scripts/ci/setup-buildx.sh
+        - REGISTRY_USERNAME="${TOOLCHAIN_REGISTRY_USERNAME}" REGISTRY_PASSWORD="${TOOLCHAIN_REGISTRY_PASSWORD}" ./scripts/ci/login-registry.sh
+        - ./scripts/ci/sync-toolchain-vars.sh

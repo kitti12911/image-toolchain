@@ -227,3 +227,55 @@ jobs:
               run: ./scripts/ci/sign-image.sh
               env:
                   COSIGN_PRIVATE_KEY: ${{ secrets.COSIGN_PRIVATE_KEY }}
+
+    sync-vars:
+        name: Sync Toolchain Image Variables
+        runs-on: ubuntu-latest
+        permissions:
+            contents: read
+        needs:
+            - plan
+            - publish
+        if: needs.plan.outputs.release_created == 'true'
+        env:
+            REGISTRY: ${{ vars.TOOLCHAIN_REGISTRY }}
+            IMAGE_NAMESPACE: ${{ vars.TOOLCHAIN_IMAGE_NAMESPACE }}
+            RELEASE_TAG: ${{ needs.plan.outputs.tag_name }}
+        steps:
+            # actions/checkout v6.0.2
+            - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+
+            - name: Set up Docker Buildx
+              run: ./scripts/ci/setup-buildx.sh
+
+            - name: Login to toolchain registry
+              run: ./scripts/ci/login-registry.sh
+              env:
+                  REGISTRY_USERNAME: ${{ secrets.TOOLCHAIN_REGISTRY_USERNAME }}
+                  REGISTRY_PASSWORD: ${{ secrets.TOOLCHAIN_REGISTRY_PASSWORD }}
+
+            # actions/create-github-app-token v2.1.4
+            # homelab-branch-sync needs "Variables: Read and write" permission.
+            - uses: actions/create-github-app-token@67018539274d69449ef7c02e8e71183d1719ab42
+              id: vars-token
+              with:
+                  app-id: ${{ secrets.BRANCH_SYNC_APP_ID }}
+                  private-key: ${{ secrets.BRANCH_SYNC_APP_PRIVATE_KEY }}
+                  owner: ${{ github.repository_owner }}
+
+            - name: Sync toolchain image variables
+              run: ./scripts/ci/sync-toolchain-vars.sh
+              env:
+                  GH_TOKEN: ${{ steps.vars-token.outputs.token }}
+                  GITHUB_REPOS: >-
+                      ${{ github.repository_owner }}/grpc-sandbox
+                      ${{ github.repository_owner }}/oas-sandbox
+                      ${{ github.repository_owner }}/worker-sandbox
+                      ${{ github.repository_owner }}/lib-util
+                      ${{ github.repository_owner }}/lib-orm
+                      ${{ github.repository_owner }}/lib-cache
+                      ${{ github.repository_owner }}/lib-async
+                      ${{ github.repository_owner }}/lib-monitor
+                      ${{ github.repository_owner }}/proto-sandbox
+                      ${{ github.repository_owner }}/migration-sandbox
+                      ${{ github.repository_owner }}/helm-sandbox
