@@ -276,6 +276,7 @@ jobs:
                       ${{ github.repository_owner }}/lib-cache
                       ${{ github.repository_owner }}/lib-async
                       ${{ github.repository_owner }}/lib-monitor
+                      ${{ github.repository_owner }}/service-gen
                       ${{ github.repository_owner }}/proto-sandbox
                       ${{ github.repository_owner }}/migration-sandbox
                       ${{ github.repository_owner }}/helm-sandbox
