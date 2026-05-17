@@ -1,4 +1,4 @@
-.PHONY: build build-image-toolchain build-migration build-release build-helm build-security build-supply-chain check check-image-toolchain check-migration check-release check-helm check-security check-supply-chain pretty markdownlint
+.PHONY: build build-image-toolchain build-migration build-release build-helm build-security build-supply-chain check check-image-toolchain check-migration check-release check-helm check-security check-supply-chain pretty markdownlint ci-markdownlint
 
 IMAGE_TOOLCHAIN ?= image-toolchain:local
 MIGRATION_TOOLCHAIN ?= migration-toolchain:local
@@ -49,5 +49,11 @@ check-supply-chain: build-supply-chain
 
 pretty:
 	prettier --write "**/*.{md,markdown,yml,yaml,json,jsonc}"
+
+markdownlint:
+	./scripts/ci/markdownlint.sh
+
+ci-markdownlint:
+	./scripts/ci/markdownlint.sh
 
 # force update #3
