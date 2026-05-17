@@ -271,6 +271,8 @@ jobs:
                       ${{ github.repository_owner }}/grpc-sandbox
                       ${{ github.repository_owner }}/oas-sandbox
                       ${{ github.repository_owner }}/worker-sandbox
+                      ${{ github.repository_owner }}/saga-sandbox
+                      ${{ github.repository_owner }}/payment-sandbox
                       ${{ github.repository_owner }}/lib-util
                       ${{ github.repository_owner }}/lib-orm
                       ${{ github.repository_owner }}/lib-cache
