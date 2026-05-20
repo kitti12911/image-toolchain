@@ -15,7 +15,7 @@ RUN apk add --no-cache \
 RUN --mount=type=cache,target=/root/.cache/pip \
 	python3 -m venv /opt/sqlfluff \
 	&& /opt/sqlfluff/bin/python -m pip install --upgrade pip \
-	&& /opt/sqlfluff/bin/python -m pip install --no-compile sqlfluff==4.1.0 \
+	&& /opt/sqlfluff/bin/python -m pip install --no-compile sqlfluff==4.2.0 \
 	&& /opt/sqlfluff/bin/python -m pip uninstall -y pip \
 	&& find /opt/sqlfluff -type d -name __pycache__ -prune -exec rm -rf {} +
 
