@@ -19,7 +19,6 @@ RUN --mount=type=cache,target=/root/.npm \
 		@semantic-release/commit-analyzer@13.0.1 \
 		@semantic-release/release-notes-generator@14.1.1 \
 		@semantic-release/github@12.0.8 \
-		@semantic-release/gitlab@13.3.2 \
 		conventional-changelog-conventionalcommits@9.3.1 \
 	&& npm cache clean --force
 
