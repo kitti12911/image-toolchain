@@ -19,7 +19,7 @@ RUN --mount=type=cache,target=/go/pkg/mod \
 	&& cd /tmp/trivy-build \
 	&& go mod init trivy-toolchain-build \
 	&& go get github.com/aquasecurity/trivy/cmd/trivy@v0.70.0 \
-		github.com/go-git/go-git/v5@v5.19.0 \
+		github.com/go-git/go-git/v5@v5.19.1 \
 		github.com/in-toto/in-toto-golang@v0.11.0 \
 		github.com/nwaples/rardecode/v2@v2.2.0 \
 		github.com/ulikunitz/xz@v0.5.15 \
