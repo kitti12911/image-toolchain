@@ -26,7 +26,20 @@ _gh_set() {
 
 for image in image-toolchain migration-toolchain release-toolchain helm-toolchain security-toolchain supply-chain-toolchain; do
     ref="${registry}/${namespace}/${image}:${release_tag}"
-    digest=$(docker buildx imagetools inspect "${ref}" --format '{{json .Manifest.Digest}}' | tr -d '"')
+    # set -e does not catch a failed inspect inside a pipe, so capture its
+    # exit status explicitly and reject empty/"null" digests before writing
+    # the variable. Otherwise consumers end up with refs like "image@" and
+    # docker pull fails with "invalid reference format".
+    digest_raw=$(docker buildx imagetools inspect "${ref}" --format '{{json .Manifest.Digest}}') || {
+        printf 'ERROR: docker buildx imagetools inspect failed for %s\n' "${ref}" >&2
+        exit 1
+    }
+    digest=$(printf '%s' "${digest_raw}" | tr -d '"')
+    if [ -z "${digest}" ] || [ "${digest}" = "null" ]; then
+        printf 'ERROR: empty digest returned for %s\n' "${ref}" >&2
+        exit 1
+    fi
+
     full_ref="${registry}/${namespace}/${image}@${digest}"
     base_var=$(printf '%s_IMAGE' "${image}" | tr 'a-z-' 'A-Z_')
 
