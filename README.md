@@ -40,6 +40,7 @@ ${TOOLCHAIN_REGISTRY}/${TOOLCHAIN_IMAGE_NAMESPACE}/supply-chain-toolchain:vx.y.z
 - protoc-gen-go-grpc
 - fieldmapgen
 - patchfieldgen
+- protomapgen
 
 `migration-toolchain` includes:
 

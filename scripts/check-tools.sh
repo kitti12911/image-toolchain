@@ -17,6 +17,7 @@ case "${profile}" in
 		docker run --rm "${image}" protoc-gen-go-grpc --version
 		docker run --rm "${image}" fieldmapgen -h
 		docker run --rm "${image}" patchfieldgen -h
+		docker run --rm "${image}" protomapgen -h
 		;;
 	migration)
 		docker run --rm "${image}" make --version
