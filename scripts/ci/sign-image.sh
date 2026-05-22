@@ -15,20 +15,6 @@ if [ "$#" -eq 0 ]; then
 	done
 fi
 
-cosign_key="${COSIGN_KEY:-}"
-if [ -z "${cosign_key}" ]; then
-	if [ -z "${COSIGN_PRIVATE_KEY:-}" ]; then
-		echo "COSIGN_KEY or COSIGN_PRIVATE_KEY is required" >&2
-		exit 2
-	fi
-
-	cosign_key="env://COSIGN_PRIVATE_KEY"
-fi
-
 for ref in "$@"; do
-	cosign sign --yes \
-		--key "${cosign_key}" \
-		--new-bundle-format=false \
-		--use-signing-config=false \
-		"${ref}"
+	cosign sign --yes "${ref}"
 done

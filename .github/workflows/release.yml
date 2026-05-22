@@ -175,6 +175,7 @@ jobs:
         permissions:
             contents: read
             packages: write
+            id-token: write
         needs:
             - plan
             - release
@@ -229,8 +230,6 @@ jobs:
 
             - name: Sign image digest
               run: ./scripts/ci/sign-image.sh
-              env:
-                  COSIGN_PRIVATE_KEY: ${{ secrets.COSIGN_PRIVATE_KEY }}
 
     sync-vars:
         name: Sync Toolchain Image Variables
