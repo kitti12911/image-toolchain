@@ -42,6 +42,9 @@ jobs:
         needs:
             - plan
         if: needs.plan.outputs.release_created == 'true'
+        permissions:
+            contents: read
+            packages: write
         env:
             REGISTRY: ${{ vars.TOOLCHAIN_REGISTRY }}
             IMAGE_NAMESPACE: ${{ vars.TOOLCHAIN_IMAGE_NAMESPACE }}
@@ -111,8 +114,8 @@ jobs:
             - name: Login to image registry
               run: ./scripts/ci/login-registry.sh
               env:
-                  REGISTRY_USERNAME: ${{ secrets.TOOLCHAIN_REGISTRY_USERNAME }}
-                  REGISTRY_PASSWORD: ${{ secrets.TOOLCHAIN_REGISTRY_PASSWORD }}
+                  REGISTRY_USERNAME: ${{ github.actor }}
+                  REGISTRY_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
 
             - name: Build and push staging image
               run: ./scripts/ci/build-image.sh
@@ -134,8 +137,8 @@ jobs:
                   TRIVY_QUIET: true
                   TRIVY_IMAGE_SRC: remote
                   TRIVY_PLATFORM: ${{ matrix.platform }}
-                  TRIVY_USERNAME: ${{ secrets.TOOLCHAIN_REGISTRY_USERNAME }}
-                  TRIVY_PASSWORD: ${{ secrets.TOOLCHAIN_REGISTRY_PASSWORD }}
+                  TRIVY_USERNAME: ${{ github.actor }}
+                  TRIVY_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
 
             - name: Report Trivy findings
               run: ./scripts/print-trivy-findings.sh "${RUNNER_TEMP}/trivy-results.json"
@@ -171,6 +174,7 @@ jobs:
         runs-on: ubuntu-latest
         permissions:
             contents: read
+            packages: write
         needs:
             - plan
             - release
@@ -206,8 +210,8 @@ jobs:
             - name: Login to image registry
               run: ./scripts/ci/login-registry.sh
               env:
-                  REGISTRY_USERNAME: ${{ secrets.TOOLCHAIN_REGISTRY_USERNAME }}
-                  REGISTRY_PASSWORD: ${{ secrets.TOOLCHAIN_REGISTRY_PASSWORD }}
+                  REGISTRY_USERNAME: ${{ github.actor }}
+                  REGISTRY_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
 
             # sigstore/cosign-installer v4.1.1
             - uses: sigstore/cosign-installer@cad07c2e89fa2edd6e2d7bab4c1aa38e53f76003
@@ -233,6 +237,7 @@ jobs:
         runs-on: ubuntu-latest
         permissions:
             contents: read
+            packages: read
         needs:
             - plan
             - publish
@@ -251,8 +256,8 @@ jobs:
             - name: Login to toolchain registry
               run: ./scripts/ci/login-registry.sh
               env:
-                  REGISTRY_USERNAME: ${{ secrets.TOOLCHAIN_REGISTRY_USERNAME }}
-                  REGISTRY_PASSWORD: ${{ secrets.TOOLCHAIN_REGISTRY_PASSWORD }}
+                  REGISTRY_USERNAME: ${{ github.actor }}
+                  REGISTRY_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
 
             # actions/create-github-app-token v2.1.4
             # homelab-branch-sync needs "Variables: Read and write" permission.
