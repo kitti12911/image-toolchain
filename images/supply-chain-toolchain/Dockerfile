@@ -19,6 +19,8 @@ RUN --mount=type=cache,target=/go/pkg/mod \
 	&& cd /tmp/trivy-build \
 	&& go mod init trivy-toolchain-build \
 	&& go get github.com/aquasecurity/trivy/cmd/trivy@v0.70.0 \
+		github.com/containerd/containerd@v1.7.32 \
+		github.com/containerd/containerd/v2@v2.2.4 \
 		github.com/go-git/go-git/v5@v5.19.1 \
 		github.com/in-toto/in-toto-golang@v0.11.0 \
 		github.com/nwaples/rardecode/v2@v2.2.0 \
@@ -29,6 +31,8 @@ RUN --mount=type=cache,target=/go/pkg/mod \
 	&& cd /tmp/cosign-build \
 	&& go mod init cosign-toolchain-build \
 	&& go get github.com/sigstore/cosign/v2/cmd/cosign@v2.6.3 \
+		github.com/containerd/containerd@v1.7.32 \
+		github.com/containerd/containerd/v2@v2.2.4 \
 		github.com/docker/cli@v29.2.0+incompatible \
 		github.com/go-jose/go-jose/v4@v4.1.4 \
 		github.com/in-toto/in-toto-golang@v0.11.0 \
