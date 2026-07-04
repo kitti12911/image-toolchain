@@ -103,27 +103,22 @@ configured registry.
 
 ## Portable CI Scripts
 
-GitHub Actions workflows keep orchestration in YAML and call the reusable
-scripts under `scripts/ci/` for the shared container work. The scripts use raw
-Docker commands, containerized Trivy, runner-installed Cosign key-pair signing,
-and pinned semantic-release packages.
+GitHub Actions workflows use official actions (`docker/setup-buildx-action`,
+`docker/login-action`, `docker/build-push-action`, `aquasecurity/trivy-action`)
+for buildx setup, registry login, image build/push, and Trivy scanning. The
+reusable scripts under `scripts/ci/` cover the remaining shared work: manifest
+promotion, multi-arch publishing, Cosign signing, and pinned semantic-release.
 
-Common inputs:
+Common inputs (remaining scripts):
 
-| Variable             | Description                                  |
-| -------------------- | -------------------------------------------- |
-| `REGISTRY`           | Target registry host                         |
-| `REGISTRY_USERNAME`  | Registry login username                      |
-| `REGISTRY_PASSWORD`  | Registry login token or password             |
-| `IMAGE_CONTEXT`      | Docker build context, such as `images/image` |
-| `IMAGE_PLATFORM`     | Docker platform, such as `linux/amd64`       |
-| `IMAGE_TAG`          | Full image tag for `build-image.sh`          |
-| `IMAGE_REF`          | Image repository without tag                 |
-| `RELEASE_TAG`        | Semver release tag                           |
-| `IMAGE_ARCHES`       | Space-separated manifest arches              |
-| `STAGING_IMAGE_REF`  | Temporary image tag to scan before promote   |
-| `ARCH_IMAGE_REF`     | Architecture-specific release tag            |
-| `TRIVY_RUNNER_IMAGE` | Optional Trivy container image               |
+| Variable            | Description                                |
+| ------------------- | ------------------------------------------ |
+| `REGISTRY`          | Target registry host                       |
+| `IMAGE_REF`         | Image repository without tag               |
+| `RELEASE_TAG`       | Semver release tag                         |
+| `IMAGE_ARCHES`      | Space-separated manifest arches            |
+| `STAGING_IMAGE_REF` | Temporary image tag to scan before promote |
+| `ARCH_IMAGE_REF`    | Architecture-specific release tag          |
 
 GitHub requires these repository variables and secrets:
 
