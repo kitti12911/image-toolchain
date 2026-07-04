@@ -29,6 +29,7 @@ ${TOOLCHAIN_REGISTRY}/${TOOLCHAIN_IMAGE_NAMESPACE}/supply-chain-toolchain:vx.y.z
 `image-toolchain` includes:
 
 - Go
+- gcc + musl-dev (CGO and `go test -race` support)
 - make
 - git
 - ca-certificates

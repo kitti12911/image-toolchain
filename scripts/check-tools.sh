@@ -7,6 +7,7 @@ profile="${2:?profile is required}"
 case "${profile}" in
 	image)
 		docker run --rm "${image}" go version
+		docker run --rm "${image}" gcc --version
 		docker run --rm "${image}" make --version
 		docker run --rm "${image}" git --version
 		docker run --rm "${image}" buf --version
@@ -15,9 +16,10 @@ case "${profile}" in
 		docker run --rm "${image}" protoc --version
 		docker run --rm "${image}" protoc-gen-go --version
 		docker run --rm "${image}" protoc-gen-go-grpc --version
-		docker run --rm "${image}" fieldmapgen -h
-		docker run --rm "${image}" patchfieldgen -h
-		docker run --rm "${image}" protomapgen -h
+		# The lib-orm generators exit non-zero on -h, so verify presence only.
+		docker run --rm "${image}" sh -c 'command -v fieldmapgen'
+		docker run --rm "${image}" sh -c 'command -v patchfieldgen'
+		docker run --rm "${image}" sh -c 'command -v protomapgen'
 		;;
 	migration)
 		docker run --rm "${image}" make --version
