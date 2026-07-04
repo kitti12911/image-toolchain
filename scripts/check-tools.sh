@@ -16,10 +16,8 @@ case "${profile}" in
 		docker run --rm "${image}" protoc --version
 		docker run --rm "${image}" protoc-gen-go --version
 		docker run --rm "${image}" protoc-gen-go-grpc --version
-		# The lib-orm generators exit non-zero on -h, so verify presence only.
-		docker run --rm "${image}" sh -c 'command -v fieldmapgen'
-		docker run --rm "${image}" sh -c 'command -v patchfieldgen'
-		docker run --rm "${image}" sh -c 'command -v protomapgen'
+		# The lib-orm generator exits non-zero on -h, so verify presence only.
+		docker run --rm "${image}" sh -c 'command -v mapgen'
 		;;
 	migration)
 		docker run --rm "${image}" make --version
