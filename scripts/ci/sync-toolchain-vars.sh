@@ -24,7 +24,10 @@ _gh_set() {
     fi
 }
 
-for image in image-toolchain migration-toolchain release-toolchain helm-toolchain security-toolchain supply-chain-toolchain; do
+# Only image-toolchain remains; the loop is kept so re-adding images is a
+# one-line change. shellcheck disable=SC2043 (intentional single-item loop).
+# shellcheck disable=SC2043
+for image in image-toolchain; do
     ref="${registry}/${namespace}/${image}:${release_tag}"
     # set -e does not catch a failed inspect inside a pipe, so capture its
     # exit status explicitly and reject empty/"null" digests before writing

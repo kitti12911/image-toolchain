@@ -1,27 +1,24 @@
 # image-toolchain
 
-Shared CI toolchain images for the homelab sandbox repositories.
+Shared CI toolchain image for the homelab sandbox repositories.
 
 ## Images
 
-| Image                    | Purpose                                           |
-| ------------------------ | ------------------------------------------------- |
-| `image-toolchain`        | Go, protobuf, Buf, OpenAPI, lint, and code tools  |
-| `migration-toolchain`    | SQLFluff and Goose migration validation           |
-| `release-toolchain`      | semantic-release and conventional changelog tools |
-| `helm-toolchain`         | Helm chart linting                                |
-| `security-toolchain`     | Go vulnerability and Semgrep code scanners        |
-| `supply-chain-toolchain` | Trivy, Gitleaks, and Cosign security tooling      |
+| Image             | Purpose                                          |
+| ----------------- | ------------------------------------------------ |
+| `image-toolchain` | Go, protobuf, Buf, OpenAPI, lint, and code tools |
 
-Images are published to the configured registry:
+`image-toolchain` is the Docker builder base for the `grpc-sandbox`,
+`oas-sandbox`, and `saga-sandbox` service images, whose Dockerfiles run
+`buf generate` and `mapgen` during the build. All other CI work (lint, test,
+security, migration, helm, release) now runs directly on GitHub-hosted runners
+via official actions and `go install` / `pip install`, so the migration,
+release, helm, security, and supply-chain toolchain images were retired.
+
+The image is published to the configured registry:
 
 ```text
 ${TOOLCHAIN_REGISTRY}/${TOOLCHAIN_IMAGE_NAMESPACE}/image-toolchain:vx.y.z
-${TOOLCHAIN_REGISTRY}/${TOOLCHAIN_IMAGE_NAMESPACE}/migration-toolchain:vx.y.z
-${TOOLCHAIN_REGISTRY}/${TOOLCHAIN_IMAGE_NAMESPACE}/release-toolchain:vx.y.z
-${TOOLCHAIN_REGISTRY}/${TOOLCHAIN_IMAGE_NAMESPACE}/helm-toolchain:vx.y.z
-${TOOLCHAIN_REGISTRY}/${TOOLCHAIN_IMAGE_NAMESPACE}/security-toolchain:vx.y.z
-${TOOLCHAIN_REGISTRY}/${TOOLCHAIN_IMAGE_NAMESPACE}/supply-chain-toolchain:vx.y.z
 ```
 
 ## Included Tools
@@ -41,51 +38,13 @@ ${TOOLCHAIN_REGISTRY}/${TOOLCHAIN_IMAGE_NAMESPACE}/supply-chain-toolchain:vx.y.z
 - protoc-gen-go-grpc
 - mapgen
 
-`migration-toolchain` includes:
-
-- make
-- goose
-- sqlfluff
-
-`release-toolchain` includes:
-
-- git
-- Node.js
-- npm
-- semantic-release
-- @semantic-release/commit-analyzer
-- @semantic-release/release-notes-generator
-- @semantic-release/github
-- conventional-changelog-conventionalcommits
-
-`helm-toolchain` includes:
-
-- make
-- Helm
-
-`security-toolchain` includes:
-
-- govulncheck
-- semgrep
-
-`supply-chain-toolchain` includes:
-
-- Trivy
-- Gitleaks
-- Cosign
-
 ## Available Commands
 
 | Command                      | Description                            |
 | ---------------------------- | -------------------------------------- |
-| `make build`                 | Build all toolchain images locally     |
+| `make build`                 | Build the toolchain image locally      |
 | `make build-image-toolchain` | Build the Go/code generation toolchain |
-| `make build-migration`       | Build the migration toolchain          |
-| `make build-release`         | Build the release toolchain            |
-| `make build-helm`            | Build the Helm toolchain               |
-| `make build-security`        | Build the security scanning toolchain  |
-| `make build-supply-chain`    | Build the supply-chain security tools  |
-| `make check`                 | Verify expected tools inside images    |
+| `make check`                 | Verify expected tools inside the image |
 | `make pretty`                | Format docs and config with Prettier   |
 | `make markdownlint`          | Lint Markdown files                    |
 

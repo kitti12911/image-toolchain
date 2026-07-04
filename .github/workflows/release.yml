@@ -61,46 +61,6 @@ jobs:
                       arch: arm64
                       platform: linux/arm64
                       runner: ubuntu-24.04-arm
-                    - image: migration-toolchain
-                      arch: amd64
-                      platform: linux/amd64
-                      runner: ubuntu-latest
-                    - image: migration-toolchain
-                      arch: arm64
-                      platform: linux/arm64
-                      runner: ubuntu-24.04-arm
-                    - image: release-toolchain
-                      arch: amd64
-                      platform: linux/amd64
-                      runner: ubuntu-latest
-                    - image: release-toolchain
-                      arch: arm64
-                      platform: linux/arm64
-                      runner: ubuntu-24.04-arm
-                    - image: helm-toolchain
-                      arch: amd64
-                      platform: linux/amd64
-                      runner: ubuntu-latest
-                    - image: helm-toolchain
-                      arch: arm64
-                      platform: linux/arm64
-                      runner: ubuntu-24.04-arm
-                    - image: security-toolchain
-                      arch: amd64
-                      platform: linux/amd64
-                      runner: ubuntu-latest
-                    - image: security-toolchain
-                      arch: arm64
-                      platform: linux/arm64
-                      runner: ubuntu-24.04-arm
-                    - image: supply-chain-toolchain
-                      arch: amd64
-                      platform: linux/amd64
-                      runner: ubuntu-latest
-                    - image: supply-chain-toolchain
-                      arch: arm64
-                      platform: linux/arm64
-                      runner: ubuntu-24.04-arm
         steps:
             # actions/checkout v6.0.2
             - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
@@ -201,11 +161,6 @@ jobs:
             matrix:
                 image:
                     - image-toolchain
-                    - migration-toolchain
-                    - release-toolchain
-                    - helm-toolchain
-                    - security-toolchain
-                    - supply-chain-toolchain
         steps:
             # actions/checkout v6.0.2
             - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
@@ -285,18 +240,9 @@ jobs:
               run: ./scripts/ci/sync-toolchain-vars.sh
               env:
                   GH_TOKEN: ${{ steps.vars-token.outputs.token }}
+                  # Only grpc/oas/saga still consume IMAGE_TOOLCHAIN_IMAGE
+                  # (their Dockerfiles run buf + mapgen in the builder stage).
                   GITHUB_REPOS: >-
                       ${{ github.repository_owner }}/grpc-sandbox
                       ${{ github.repository_owner }}/oas-sandbox
-                      ${{ github.repository_owner }}/worker-sandbox
                       ${{ github.repository_owner }}/saga-sandbox
-                      ${{ github.repository_owner }}/payment-sandbox
-                      ${{ github.repository_owner }}/lib-util
-                      ${{ github.repository_owner }}/lib-orm
-                      ${{ github.repository_owner }}/lib-cache
-                      ${{ github.repository_owner }}/lib-async
-                      ${{ github.repository_owner }}/lib-monitor
-                      ${{ github.repository_owner }}/service-gen
-                      ${{ github.repository_owner }}/proto-sandbox
-                      ${{ github.repository_owner }}/migration-sandbox
-                      ${{ github.repository_owner }}/helm-sandbox
