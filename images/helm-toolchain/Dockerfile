@@ -14,7 +14,7 @@ RUN --mount=type=cache,target=/go/pkg/mod \
 	mkdir /tmp/helm-build \
 	&& cd /tmp/helm-build \
 	&& go mod init helm-toolchain-build \
-	&& go get helm.sh/helm/v3/cmd/helm@v3.21.2 google.golang.org/grpc@v1.80.0 github.com/containerd/containerd@v1.7.32 \
+	&& go get helm.sh/helm/v3/cmd/helm@v3.21.2 google.golang.org/grpc@v1.80.0 github.com/containerd/containerd@v1.7.33 \
 	&& CGO_ENABLED=0 go install -trimpath -ldflags="-s -w" helm.sh/helm/v3/cmd/helm
 
 WORKDIR /workspace
