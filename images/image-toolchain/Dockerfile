@@ -22,6 +22,6 @@ RUN --mount=type=secret,id=go_gitconfig,target=/root/.gitconfig,required=false \
 	&& CGO_ENABLED=0 go install -trimpath -ldflags="-s -w" github.com/oasdiff/oasdiff@v1.21.0 \
 	&& CGO_ENABLED=0 go install -trimpath -ldflags="-s -w" google.golang.org/protobuf/cmd/protoc-gen-go@v1.36.11 \
 	&& CGO_ENABLED=0 go install -trimpath -ldflags="-s -w" google.golang.org/grpc/cmd/protoc-gen-go-grpc@v1.6.2 \
-	&& CGO_ENABLED=0 go install -trimpath -ldflags="-s -w" github.com/kitti12911/lib-orm/v4/cmd/mapgen@v4.0.0
+	&& CGO_ENABLED=0 go install -trimpath -ldflags="-s -w" github.com/kitti12911/lib-orm/v4/cmd/mapgen@v4.1.0
 
 WORKDIR /workspace
